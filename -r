@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Date: Sun, 16 Aug 2026 15:52:34 GMT
+Content-Type: video/mp4
+Content-Length: 368006366
+Connection: keep-alive
+Accept-Ranges: bytes
+ETag: "4e710d5ee58f4115cd75ec6840b45849-44"
+Last-Modified: Sun, 16 Aug 2026 15:50:00 GMT
+Server: cloudflare
+CF-RAY: a2c19b5cee734102-SIN
+

@@ -610,6 +610,13 @@ a { text-decoration: none; color: inherit; }
   display: block !important;
 }
 
+.player-wrapper .video-js:focus,
+.player-wrapper .vjs-control:focus,
+.player-wrapper .vjs-menu-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 @media (max-width: 480px) {
   .player-wrapper .vjs-current-time,
   .player-wrapper .vjs-time-divider,
