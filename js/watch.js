@@ -99,10 +99,15 @@ function loadEpisode(index) {
   history.replaceState(null, '', pageUrl);
 
   if (ep.driveId && !url) {
-    // driveId: thử native video trước, fallback iframe nếu file không stream được
+    // Trên mobile dùng iframe ngay để áp dụng tỷ lệ giao diện player ổn định.
     const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
     const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
-    setVideoPlayer(streamUrl, fallbackUrl);
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      setIframePlayer(fallbackUrl);
+    } else {
+      // Desktop: thử native video trước, fallback iframe nếu file không stream được.
+      setVideoPlayer(streamUrl, fallbackUrl);
+    }
   } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
