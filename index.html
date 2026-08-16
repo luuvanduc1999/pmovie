@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PMovie - Xem Phim Online</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-p">P</span>Movie
+      </a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link active">Trang chủ</a>
+        <a href="index.html?type=Phim+lẻ" class="nav-link">Phim lẻ</a>
+        <a href="index.html?type=Phim+bộ" class="nav-link">Phim bộ</a>
+      </nav>
+      <div class="search-bar">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm phim..." />
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="hero" id="heroBanner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-badge" id="heroBadge"></span>
+      <h1 class="hero-title" id="heroTitle"></h1>
+      <p class="hero-desc" id="heroDesc"></p>
+      <div class="hero-meta" id="heroMeta"></div>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary" id="heroWatch">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Xem Ngay
+        </a>
+        <button class="btn btn-secondary" id="heroInfo">Chi Tiết</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTER TABS -->
+  <section class="filter-section">
+    <div class="container">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-type="all">Tất cả</button>
+        <button class="filter-tab" data-type="Phim lẻ">Phim lẻ</button>
+        <button class="filter-tab" data-type="Phim bộ">Phim bộ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOVIE GRID -->
+  <main class="main-content">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" id="sectionTitle">Tất cả phim</h2>
+        <span class="movie-count" id="movieCount"></span>
+      </div>
+      <div class="movie-grid" id="movieGrid">
+        <!-- JS render -->
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>Không tìm thấy phim nào</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-logo"><span class="logo-p">P</span>Movie</p>
+      <p class="footer-text">© 2024 PMovie. Trang web xem phim trực tuyến.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

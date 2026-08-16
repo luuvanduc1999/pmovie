@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "title": "Inception",
+    "poster": "static/inception.jpg",
+    "type": "Phim lẻ",
+    "year": 2010,
+    "genre": "Khoa học viễn tưởng",
+    "rating": 8.8,
+    "description": "Một tên trộm chuyên đánh cắp bí mật từ sâu trong tiềm thức của con người trong trạng thái mơ nhận được nhiệm vụ ngược lại: cài một ý tưởng vào tâm trí của giám đốc điều hành.",
+    "episodes": [
+      {
+        "title": "Full Movie",
+        "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Interstellar",
+    "poster": "static/interstellar.jpg",
+    "type": "Phim lẻ",
+    "year": 2014,
+    "genre": "Khoa học viễn tưởng",
+    "rating": 8.6,
+    "description": "Nhóm thám hiểm du hành qua lỗ sâu đục trong không gian với hy vọng đảm bảo sự tồn tại của nhân loại.",
+    "episodes": [
+      {
+        "title": "Full Movie",
+        "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "The Dark Knight",
+    "poster": "static/darkknight.jpg",
+    "type": "Phim lẻ",
+    "year": 2008,
+    "genre": "Hành động",
+    "rating": 9.0,
+    "description": "Khi Joker gieo rắc hỗn loạn và tàn phá cho người dân Gotham, Batman phải chấp nhận một trong những thử thách tâm lý và thể chất lớn nhất của mình để đương đầu với tội ác.",
+    "episodes": [
+      {
+        "title": "Full Movie",
+        "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Breaking Bad",
+    "poster": "static/breakingbad.jpg",
+    "type": "Phim bộ",
+    "year": 2008,
+    "genre": "Tội phạm",
+    "rating": 9.5,
+    "description": "Một giáo viên hóa học bị ung thư hợp tác với học sinh cũ để sản xuất và bán methamphetamine nhằm đảm bảo tài chính cho gia đình.",
+    "episodes": [
+      { "title": "Tập 1 - Pilot", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 2 - Cat's in the Bag", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 3 - ...And the Bag's in the River", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 4 - Cancer Man", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 5 - Gray Matter", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Game of Thrones",
+    "poster": "static/got.jpg",
+    "type": "Phim bộ",
+    "year": 2011,
+    "genre": "Giả tưởng",
+    "rating": 9.2,
+    "description": "Chín gia tộc quý tộc tranh giành quyền kiểm soát vùng đất huyền thoại Westeros trong khi một thế lực cổ đại trỗi dậy từ phương Bắc.",
+    "episodes": [
+      { "title": "Tập 1 - Winter Is Coming", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 2 - The Kingsroad", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 3 - Lord Snow", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 4 - Cripples, Bastards...", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Stranger Things",
+    "poster": "static/strangerthings.jpg",
+    "type": "Phim bộ",
+    "year": 2016,
+    "genre": "Kinh dị",
+    "rating": 8.7,
+    "description": "Khi một cậu bé mất tích, một thị trấn nhỏ khám phá ra bí ẩn liên quan đến các thí nghiệm bí mật, lực lượng siêu nhiên đáng sợ và một cô bé kỳ lạ.",
+    "episodes": [
+      { "title": "Tập 1 - The Vanishing of Will Byers", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 2 - The Weirdo on Maple Street", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 3 - Holly, Jolly", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 4 - The Body", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 5 - The Flea and the Acrobat", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 6 - The Monster", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Avengers: Endgame",
+    "poster": "static/endgame.jpg",
+    "type": "Phim lẻ",
+    "year": 2019,
+    "genre": "Hành động",
+    "rating": 8.4,
+    "description": "Sau thảm họa của Infinity War, vũ trụ đang đổ nát. Với sự giúp đỡ của các đồng minh còn lại, các Avengers tập hợp một lần nữa để đảo ngược hành động của Thanos.",
+    "episodes": [
+      {
+        "title": "Full Movie",
+        "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "The Witcher",
+    "poster": "static/witcher.jpg",
+    "type": "Phim bộ",
+    "year": 2019,
+    "genre": "Giả tưởng",
+    "rating": 8.2,
+    "description": "Geralt of Rivia, một thợ săn quái vật đơn độc, đấu tranh để tìm kiếm vị trí của mình trong một thế giới mà con người thường tàn ác hơn cả quái vật.",
+    "episodes": [
+      { "title": "Tập 1 - The End's Beginning", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 2 - Four Marks", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 3 - Betrayer Moon", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 4 - Of Banquets, Bastards...", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" },
+      { "title": "Tập 5 - Bottled Appetites", "driveId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs" }
+    ]
+  }
+]
