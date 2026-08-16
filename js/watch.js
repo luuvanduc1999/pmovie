@@ -155,6 +155,7 @@ function setVideoPlayer(url, fallbackUrl) {
     controls: true,
     fluid: true,
     aspectRatio: '16:9',
+    preferFullWindow: false,
     controlBar: {
       skipButtons: { backward: 10, forward: 10 },
       volumePanel: { inline: false },
@@ -169,9 +170,11 @@ function setVideoPlayer(url, fallbackUrl) {
     if (!screen.orientation?.lock) return;
 
     if (mediaPlayer.isFullscreen()) {
-      try {
-        await screen.orientation.lock('landscape');
-      } catch (_) {}
+      requestAnimationFrame(async () => {
+        try {
+          await screen.orientation.lock('landscape-primary');
+        } catch (_) {}
+      });
     } else if (screen.orientation.unlock) {
       screen.orientation.unlock();
     }
