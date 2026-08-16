@@ -18,7 +18,10 @@ function initHero() {
   const featured = allMovies[Math.floor(Math.random() * allMovies.length)];
 
   const banner = document.getElementById('heroBanner');
-  banner.style.backgroundImage = `url('${featured.poster}')`;
+  banner.style.backgroundImage = `url('${featured.backdrop || featured.poster}')`;
+  const heroPoster = document.getElementById('heroPoster');
+  heroPoster.src = featured.poster;
+  heroPoster.alt = `Poster ${featured.title}`;
 
   document.getElementById('heroBadge').textContent = featured.type;
   document.getElementById('heroTitle').textContent = featured.title;
