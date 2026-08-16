@@ -508,9 +508,10 @@ a { text-decoration: none; color: inherit; }
 /* Nút quay lại luôn hiện, đủ lớn để bấm trên mobile */
 .watch-page .navbar-inner .btn-sm {
   flex-shrink: 0;
-  padding: 8px 16px;
-  font-size: 0.85rem;
+  padding: 5px 10px;
+  font-size: 0.75rem;
   white-space: nowrap;
+  border-radius: var(--radius-sm);
 }
 
 /* ===================================================
@@ -596,53 +597,6 @@ a { text-decoration: none; color: inherit; }
   /* object-fit giữ tỉ lệ video gốc */
   object-fit: contain;
   background: #000;
-}
-
-/* FULLSCREEN BUTTON */
-.fs-btn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  z-index: 10;
-  width: 38px; height: 38px;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: var(--radius-sm);
-  display: none; /* chỉ hiện trên touch device */
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #fff;
-  backdrop-filter: blur(6px);
-  transition: background var(--transition);
-  padding: 0;
-}
-.fs-btn svg { width: 18px; height: 18px; }
-.fs-btn:hover { background: rgba(229,9,20,0.7); }
-
-/* Chỉ hiện trên thiết bị cảm ứng */
-@media (hover: none) and (pointer: coarse) {
-  .fs-btn { display: flex; }
-}
-
-/* Trạng thái fullscreen: wrapper chiếm toàn màn hình */
-.player-wrapper:fullscreen,
-.player-wrapper:-webkit-full-screen {
-  width: 100vw !important;
-  height: 100vh !important;
-  aspect-ratio: unset !important;
-  border-radius: 0 !important;
-  background: #000;
-}
-.player-wrapper:fullscreen #videoPlayer,
-.player-wrapper:-webkit-full-screen #videoPlayer {
-  width: 100% !important;
-  height: 100% !important;
-  top: 0 !important;
-}
-.player-wrapper:fullscreen .fs-btn,
-.player-wrapper:-webkit-full-screen .fs-btn {
-  display: none;
 }
 
 /* NOW PLAYING BAR */

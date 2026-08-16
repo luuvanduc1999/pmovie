@@ -29,7 +29,7 @@ async function loadData() {
 }
 
 function renderPage(allMovies) {
-  document.title = `${movie.title} - PMovie`;
+  document.title = `${movie.title} - DMovie`;
 
   // Breadcrumb
   document.getElementById('breadcrumbTitle').textContent = movie.title;
@@ -98,11 +98,15 @@ function loadEpisode(index) {
   pageUrl.searchParams.set('ep', index);
   history.replaceState(null, '', pageUrl);
 
-  // Drive /preview URL → iframe; mọi URL khác → native <video>
-  if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
+  if (ep.driveId && !url) {
+    // driveId: thử native video trước, fallback iframe nếu file không stream được
+    const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
+    const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
+    setVideoPlayer(streamUrl, fallbackUrl);
+  } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
-    setVideoPlayer(url);
+    setVideoPlayer(url, null);
   }
 
   // Update now playing
@@ -123,7 +127,7 @@ function loadEpisode(index) {
   window.scrollTo({ top: 64, behavior: 'smooth' });
 }
 
-function setVideoPlayer(url) {
+function setVideoPlayer(url, fallbackUrl) {
   const wrapper = document.querySelector('.player-wrapper');
   let player = document.getElementById('videoPlayer');
 
@@ -141,7 +145,11 @@ function setVideoPlayer(url) {
   const loading = document.getElementById('playerLoading');
   loading.classList.remove('hidden');
   player.oncanplay = () => loading.classList.add('hidden');
-  player.onerror = () => loading.classList.add('hidden');
+  player.onerror = () => {
+    loading.classList.add('hidden');
+    // File Drive không stream được → dùng iframe
+    if (fallbackUrl) setIframePlayer(fallbackUrl);
+  };
   player.src = url;
   player.load();
 }
@@ -154,14 +162,15 @@ function setIframePlayer(url) {
     const iframe = document.createElement('iframe');
     iframe.id = 'videoPlayer';
     iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('allow', 'autoplay; encrypted-media');
+    iframe.setAttribute('webkitallowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation');
     wrapper.replaceChild(iframe, player);
     player = iframe;
   }
 
-  // iframe fill đúng 16:9, không dịch chỉnh
-  player.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+  // Thu nội dung iframe xuống 75% nhưng bù kích thước để vẫn phủ kín khung video.
+  player.style.cssText = 'position:absolute;top:0;left:0;width:133.333%;height:133.333%;border:none;z-index:1;transform:scale(0.75);transform-origin:top left;';
   player.src = url;
   document.getElementById('playerLoading').classList.add('hidden');
 }
@@ -217,30 +226,3 @@ function createMovieCard(m) {
 }
 
 loadData();
-
-function requestFullscreenLandscape() {
-  const wrapper = document.querySelector('.player-wrapper');
-  const req = wrapper.requestFullscreen
-    || wrapper.webkitRequestFullscreen
-    || wrapper.mozRequestFullScreen;
-
-  if (!req) return;
-
-  req.call(wrapper)
-    .then(() => {
-      if (screen.orientation?.lock) {
-        screen.orientation.lock('landscape').catch(() => {});
-      }
-    })
-    .catch(() => {});
-}
-
-// Khi thoát fullscreen: unlock orientation về auto
-function onFullscreenChange() {
-  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (!isFs && screen.orientation?.unlock) {
-    screen.orientation.unlock();
-  }
-}
-document.addEventListener('fullscreenchange', onFullscreenChange);
-document.addEventListener('webkitfullscreenchange', onFullscreenChange);
