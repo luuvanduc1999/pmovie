@@ -70,11 +70,15 @@ a { text-decoration: none; color: inherit; }
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.5px;
   white-space: nowrap;
 }
+.logo-mark { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
 .logo-p { color: var(--accent); }
 
 .nav-links {
