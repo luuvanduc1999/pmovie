@@ -165,6 +165,17 @@ function setVideoPlayer(url, fallbackUrl) {
       ]
     }
   });
+  mediaPlayer.on('fullscreenchange', async () => {
+    if (!screen.orientation?.lock) return;
+
+    if (mediaPlayer.isFullscreen()) {
+      try {
+        await screen.orientation.lock('landscape');
+      } catch (_) {}
+    } else if (screen.orientation.unlock) {
+      screen.orientation.unlock();
+    }
+  });
   loadVideoSource(url, fallbackUrl);
 }
 
