@@ -169,8 +169,8 @@ function setIframePlayer(url) {
     player = iframe;
   }
 
-  // Thu nội dung iframe xuống 75% nhưng bù kích thước để vẫn phủ kín khung video.
-  player.style.cssText = 'position:absolute;top:0;left:0;width:133.333%;height:133.333%;border:none;z-index:1;transform:scale(0.75);transform-origin:top left;';
+  // Thu nội dung iframe xuống 50% nhưng bù kích thước để vẫn phủ kín khung video.
+  player.style.cssText = 'position:absolute;top:0;left:0;width:200%;height:200%;border:none;z-index:1;transform:scale(0.5);transform-origin:top left;';
   player.src = url;
   document.getElementById('playerLoading').classList.add('hidden');
 }
