@@ -11,11 +11,19 @@
     "episodes": [
       {
         "title": "Tập 1",
-        "driveId": "1QKIXsU1OrzICib_ryFoCfUE4nHF2hONZ"
+        "r2": "https://pub-75c47ba249dd499f8017994a0f087231.r2.dev/tyrant/tyrant1.mp4"
       },
       {
         "title": "Tập 2",
-        "driveId": "1CTmGTNlzoI4yFpJniz5KA2afBzzMO8Ra"
+        "r2": "https://pub-75c47ba249dd499f8017994a0f087231.r2.dev/tyrant/tyrant2.mp4"
+      },
+      {
+        "title": "Tập 3",
+        "r2": "https://pub-75c47ba249dd499f8017994a0f087231.r2.dev/tyrant/tyrant3.mp4"
+      },
+      {
+        "title": "Tập 4",
+        "r2": "https://pub-75c47ba249dd499f8017994a0f087231.r2.dev/tyrant/tyrant4.mp4"
       }
     ]
   }

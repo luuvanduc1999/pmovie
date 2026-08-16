@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đang xem - Dmovie</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
+  <link href="https://vjs.zencdn.net/8.23.4/video-js.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -49,9 +50,9 @@
             </div>
             <video
               id="videoPlayer"
+              class="video-js vjs-big-play-centered"
               controls
-              controlslist="nodownload"
-              preload="metadata"
+              preload="auto"
               playsinline
             ></video>
           </div>
@@ -120,6 +121,7 @@
     </div>
   </footer>
 
-  <script src="js/watch.js?v=3"></script>
+  <script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
+  <script src="js/watch.js?v=12"></script>
 </body>
 </html>

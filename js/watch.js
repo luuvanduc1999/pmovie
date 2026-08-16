@@ -1,5 +1,6 @@
 let movie = null;
 let currentEpIndex = 0;
+let mediaPlayer = null;
 
 async function loadData() {
   const params = new URLSearchParams(window.location.search);
@@ -76,7 +77,7 @@ function renderEpisodeList() {
   const list = document.getElementById('episodeList');
   list.innerHTML = movie.episodes.map((ep, i) => `
     <div class="episode-item ${i === currentEpIndex ? 'active' : ''}"
-         onclick="loadEpisode(${i})">
+          onclick="loadEpisode(${i}, true)">
       <div class="ep-number">${i + 1}</div>
       <div class="ep-title">${ep.title}</div>
       <svg class="ep-play-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -86,12 +87,12 @@ function renderEpisodeList() {
   `).join('');
 }
 
-function loadEpisode(index) {
+function loadEpisode(index, shouldScroll = false) {
   if (!movie || index < 0 || index >= movie.episodes.length) return;
 
   currentEpIndex = index;
   const ep = movie.episodes[index];
-  const url = ep.url || '';
+  const url = ep.r2 || ep.url || '';
 
   // Update URL without reload
   const pageUrl = new URL(window.location);
@@ -99,15 +100,12 @@ function loadEpisode(index) {
   history.replaceState(null, '', pageUrl);
 
   if (ep.driveId && !url) {
-    // Trên mobile dùng iframe ngay để áp dụng tỷ lệ giao diện player ổn định.
+    // Ưu tiên trình phát video gốc ở mọi kích thước màn hình. Iframe preview
+    // của Google Drive có thể đặt timeline sai vị trí trên mobile.
     const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
     const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      setIframePlayer(fallbackUrl);
-    } else {
-      // Desktop: thử native video trước, fallback iframe nếu file không stream được.
-      setVideoPlayer(streamUrl, fallbackUrl);
-    }
+    // Nếu Drive không cho stream trực tiếp, onerror sẽ chuyển sang iframe.
+    setVideoPlayer(streamUrl, fallbackUrl);
   } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
@@ -129,53 +127,84 @@ function loadEpisode(index) {
   const activeEl = document.querySelectorAll('.episode-item')[index];
   if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
-  window.scrollTo({ top: 64, behavior: 'smooth' });
+  if (shouldScroll) window.scrollTo({ top: 64, behavior: 'smooth' });
 }
 
 function setVideoPlayer(url, fallbackUrl) {
   const wrapper = document.querySelector('.player-wrapper');
   let player = document.getElementById('videoPlayer');
 
-  if (player.tagName !== 'VIDEO') {
+  if (mediaPlayer && !mediaPlayer.isDisposed()) {
+    loadVideoSource(url, fallbackUrl);
+    return;
+  }
+
+  if (!player || player.tagName !== 'VIDEO') {
     const video = document.createElement('video');
     video.id = 'videoPlayer';
+    video.className = 'video-js vjs-big-play-centered';
     video.controls = true;
-    video.setAttribute('controlslist', 'nodownload');
     video.setAttribute('playsinline', '');
-    video.setAttribute('preload', 'metadata');
-    wrapper.replaceChild(video, player);
+    video.setAttribute('preload', 'auto');
+    if (player) wrapper.replaceChild(video, player);
+    else wrapper.appendChild(video);
     player = video;
   }
 
+  mediaPlayer = window.videojs(player, {
+    controls: true,
+    fluid: true,
+    aspectRatio: '16:9',
+    controlBar: {
+      skipButtons: { backward: 10, forward: 10 },
+      volumePanel: { inline: false },
+      children: [
+        'playToggle', 'skipBackward', 'skipForward', 'volumePanel',
+        'currentTimeDisplay', 'timeDivider', 'durationDisplay',
+        'progressControl', 'playbackRateMenuButton', 'fullscreenToggle'
+      ]
+    }
+  });
+  loadVideoSource(url, fallbackUrl);
+}
+
+function loadVideoSource(url, fallbackUrl) {
   const loading = document.getElementById('playerLoading');
   loading.classList.remove('hidden');
-  player.oncanplay = () => loading.classList.add('hidden');
-  player.onerror = () => {
+  mediaPlayer.one('loadeddata', () => loading.classList.add('hidden'));
+  mediaPlayer.one('error', () => {
     loading.classList.add('hidden');
-    // File Drive không stream được → dùng iframe
     if (fallbackUrl) setIframePlayer(fallbackUrl);
-  };
-  player.src = url;
-  player.load();
+  });
+  mediaPlayer.src({ src: url, type: 'video/mp4' });
+  mediaPlayer.load();
 }
 
 function setIframePlayer(url) {
   const wrapper = document.querySelector('.player-wrapper');
   let player = document.getElementById('videoPlayer');
 
-  if (player.tagName !== 'IFRAME') {
+  if (mediaPlayer && !mediaPlayer.isDisposed()) {
+    mediaPlayer.dispose();
+    mediaPlayer = null;
+    player = null;
+  }
+
+  if (!player || player.tagName !== 'IFRAME') {
     const iframe = document.createElement('iframe');
     iframe.id = 'videoPlayer';
     iframe.setAttribute('allowfullscreen', '');
     iframe.setAttribute('webkitallowfullscreen', '');
     iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation');
-    wrapper.replaceChild(iframe, player);
+    if (player) wrapper.replaceChild(iframe, player);
+    else wrapper.appendChild(iframe);
     player = iframe;
   }
 
-  // Thu nội dung iframe xuống 50% nhưng bù kích thước để vẫn phủ kín khung video.
-  player.style.cssText = 'position:absolute;top:0;left:0;width:200%;height:200%;border:none;z-index:1;transform:scale(0.5);transform-origin:top left;';
+  // Khôi phục lại 100% gốc không dùng scale hay zoom vì Google Drive
+  // dùng getBoundingClientRect() bên trong, nếu bóp méo sẽ làm thanh timeline nhảy lên trên cùng và hỏng cảm ứng.
+  player.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;';
   player.src = url;
   document.getElementById('playerLoading').classList.add('hidden');
 }
@@ -183,7 +212,7 @@ function setIframePlayer(url) {
 function navigateEpisode(direction) {
   const newIndex = currentEpIndex + direction;
   if (newIndex >= 0 && newIndex < movie.episodes.length) {
-    loadEpisode(newIndex);
+    loadEpisode(newIndex, true);
   }
 }
 

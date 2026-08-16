@@ -599,6 +599,26 @@ a { text-decoration: none; color: inherit; }
   background: #000;
 }
 
+.player-wrapper .video-js {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+.player-wrapper .vjs-skip-backward-10,
+.player-wrapper .vjs-skip-forward-10 {
+  display: block !important;
+}
+
+@media (max-width: 480px) {
+  .player-wrapper .vjs-current-time,
+  .player-wrapper .vjs-time-divider,
+  .player-wrapper .vjs-duration,
+  .player-wrapper .vjs-playback-rate {
+    display: none;
+  }
+}
+
 /* NOW PLAYING BAR */
 .now-playing-bar {
   display: flex;
@@ -847,6 +867,7 @@ a { text-decoration: none; color: inherit; }
   .player-wrapper {
     border-radius: 0;
     box-shadow: none;
+    aspect-ratio: 16/9;
   }
 
   .now-playing-bar {
@@ -894,6 +915,7 @@ a { text-decoration: none; color: inherit; }
   .search-bar { min-width: 0; flex: 1; }
 
   /* Watch page */
+
   .watch-meta { gap: 8px; }
   .watch-meta .meta-tag { font-size: 0.75rem; }
 
