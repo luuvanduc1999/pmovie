@@ -155,7 +155,7 @@ function setVideoPlayer(url, fallbackUrl) {
     controls: true,
     fluid: true,
     aspectRatio: '16:9',
-    preferFullWindow: false,
+    preferFullWindow: true,
     controlBar: {
       skipButtons: { backward: 10, forward: 10 },
       volumePanel: { inline: false },

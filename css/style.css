@@ -634,7 +634,6 @@ a { text-decoration: none; color: inherit; }
 @media (max-width: 480px) {
   .player-wrapper .vjs-current-time,
   .player-wrapper .vjs-time-divider,
-  .player-wrapper .vjs-duration,
   .player-wrapper .vjs-playback-rate {
     display: none;
   }
