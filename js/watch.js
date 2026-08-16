@@ -185,6 +185,7 @@ function setVideoPlayer(url, fallbackUrl) {
 function loadVideoSource(url, fallbackUrl) {
   const loading = document.getElementById('playerLoading');
   loading.classList.remove('hidden');
+  mediaPlayer.poster(movie.poster);
   mediaPlayer.one('loadeddata', () => loading.classList.add('hidden'));
   mediaPlayer.one('error', () => {
     loading.classList.add('hidden');
