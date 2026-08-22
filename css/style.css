@@ -582,47 +582,38 @@ a { text-decoration: none; color: inherit; }
   user-select: none;
 }
 
-/* In-Page Mobile Fullscreen (Tự động xoay ngang màn hình không bị thông báo Chrome) */
-.player-wrapper.is-mobile-fullscreen {
+/* ===================================================
+   REAL NATIVE FULLSCREEN STYLES
+   =================================================== */
+.player-wrapper:fullscreen,
+.player-wrapper:-webkit-full-screen,
+.player-wrapper:-moz-full-screen,
+.player-wrapper:-ms-fullscreen,
+.player-wrapper.is-fullscreen {
   position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
   max-width: none !important;
+  max-height: none !important;
   border-radius: 0 !important;
-  z-index: 999999 !important;
-  background: #000 !important;
   box-shadow: none !important;
+  background: #000 !important;
+  z-index: 2147483647 !important;
+  aspect-ratio: auto !important;
+  transform: none !important;
 }
 
-@media (orientation: portrait) {
-  .player-wrapper.is-mobile-fullscreen {
-    top: 0 !important;
-    left: 0 !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: 100dvh !important;
-    width: 100vh !important;
-    height: 100dvw !important;
-    height: 100vw !important;
-    transform: rotate(90deg) translateY(-100%) !important;
-    transform-origin: top left !important;
-  }
-}
-
-@media (orientation: landscape) {
-  .player-wrapper.is-mobile-fullscreen {
-    inset: 0 !important;
-    width: 100vw !important;
-    width: 100dvw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    transform: none !important;
-  }
-}
-
-body.has-mobile-fullscreen {
-  overflow: hidden !important;
-  position: fixed !important;
+.player-wrapper:fullscreen #videoPlayer,
+.player-wrapper:-webkit-full-screen #videoPlayer,
+.player-wrapper:-moz-full-screen #videoPlayer,
+.player-wrapper:-ms-fullscreen #videoPlayer,
+.player-wrapper.is-fullscreen #videoPlayer {
   width: 100% !important;
   height: 100% !important;
+  object-fit: contain !important;
+  background: #000 !important;
 }
 
 #videoPlayer {

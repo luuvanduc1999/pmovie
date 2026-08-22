@@ -609,11 +609,31 @@ function initPipAndFullscreenEvents() {
       toggleFullscreen();
     });
 
-    document.addEventListener('fullscreenchange', () => {
-      const isFs = !!document.fullscreenElement;
+    const onFullscreenChange = () => {
+      const isFs = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
       wrapper.classList.toggle('is-fullscreen', isFs);
       updateFullscreenIcons(isFs);
-    });
+
+      if (isFs) {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      } else {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
   }
 }
 
@@ -626,41 +646,57 @@ function updateFullscreenIcons(isFs) {
   if (iconExit) iconExit.style.display = isFs ? 'block' : 'none';
 }
 
-function isMobileDevice() {
-  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    (window.innerWidth <= 820 && ('ontouchstart' in window || navigator.maxTouchPoints > 0));
-}
-
 function toggleFullscreen() {
   const wrapper = document.getElementById('playerWrapper');
+  const video = videoEl;
   if (!wrapper) return;
 
-  if (isMobileDevice()) {
-    // Trên mobile: Sử dụng In-Page Fullscreen thuần CSS để Chrome không hiện popup hướng dẫn "Vuốt từ trên xuống để thoát"
-    const isMobileFs = wrapper.classList.contains('is-mobile-fullscreen');
-    if (!isMobileFs) {
-      wrapper.classList.add('is-mobile-fullscreen');
-      document.body.classList.add('has-mobile-fullscreen');
-      updateFullscreenIcons(true);
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(() => {});
+  const isFullscreen = !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+
+  if (!isFullscreen) {
+    // Bật Native Fullscreen chuẩn của thiết bị
+    const requestFs =
+      wrapper.requestFullscreen ||
+      wrapper.webkitRequestFullscreen ||
+      wrapper.webkitRequestFullScreen ||
+      wrapper.mozRequestFullScreen ||
+      wrapper.msRequestFullscreen;
+
+    if (requestFs) {
+      const p = requestFs.call(wrapper);
+      if (p && p.then) {
+        p.then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        }).catch(() => {
+          if (video && video.webkitEnterFullscreen) {
+            video.webkitEnterFullscreen();
+          }
+        });
       }
-    } else {
-      wrapper.classList.remove('is-mobile-fullscreen');
-      document.body.classList.remove('has-mobile-fullscreen');
-      updateFullscreenIcons(false);
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock().catch(() => {});
-      }
+    } else if (video && video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
     }
   } else {
-    // Trên máy tính: Dùng Fullscreen API chuẩn
-    if (!document.fullscreenElement) {
-      if (wrapper.requestFullscreen) wrapper.requestFullscreen();
-      else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-    } else {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    // Thoát Native Fullscreen
+    const exitFs =
+      document.exitFullscreen ||
+      document.webkitExitFullscreen ||
+      document.webkitCancelFullScreen ||
+      document.mozCancelFullScreen ||
+      document.msExitFullscreen;
+
+    if (exitFs) {
+      exitFs.call(document).catch(() => {});
+    }
+    if (screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock().catch(() => {});
     }
   }
 }
