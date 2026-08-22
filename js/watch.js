@@ -612,30 +612,56 @@ function initPipAndFullscreenEvents() {
     document.addEventListener('fullscreenchange', () => {
       const isFs = !!document.fullscreenElement;
       wrapper.classList.toggle('is-fullscreen', isFs);
-      const iconEnter = fsBtn.querySelector('.icon-fs-enter');
-      const iconExit = fsBtn.querySelector('.icon-fs-exit');
-      if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
-      if (iconExit) iconExit.style.display = isFs ? 'block' : 'none';
-
-      // Auto rotate to landscape on mobile fullscreen if supported
-      if (isFs && screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(() => {});
-      } else if (!isFs && screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock().catch(() => {});
-      }
+      updateFullscreenIcons(isFs);
     });
   }
+}
+
+function updateFullscreenIcons(isFs) {
+  const fsBtn = document.getElementById('ctrlFullscreenBtn');
+  if (!fsBtn) return;
+  const iconEnter = fsBtn.querySelector('.icon-fs-enter');
+  const iconExit = fsBtn.querySelector('.icon-fs-exit');
+  if (iconEnter) iconEnter.style.display = isFs ? 'none' : 'block';
+  if (iconExit) iconExit.style.display = isFs ? 'block' : 'none';
+}
+
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 820 && ('ontouchstart' in window || navigator.maxTouchPoints > 0));
 }
 
 function toggleFullscreen() {
   const wrapper = document.getElementById('playerWrapper');
   if (!wrapper) return;
-  if (!document.fullscreenElement) {
-    if (wrapper.requestFullscreen) wrapper.requestFullscreen();
-    else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+
+  if (isMobileDevice()) {
+    // Trên mobile: Sử dụng In-Page Fullscreen thuần CSS để Chrome không hiện popup hướng dẫn "Vuốt từ trên xuống để thoát"
+    const isMobileFs = wrapper.classList.contains('is-mobile-fullscreen');
+    if (!isMobileFs) {
+      wrapper.classList.add('is-mobile-fullscreen');
+      document.body.classList.add('has-mobile-fullscreen');
+      updateFullscreenIcons(true);
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+    } else {
+      wrapper.classList.remove('is-mobile-fullscreen');
+      document.body.classList.remove('has-mobile-fullscreen');
+      updateFullscreenIcons(false);
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock().catch(() => {});
+      }
+    }
   } else {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    // Trên máy tính: Dùng Fullscreen API chuẩn
+    if (!document.fullscreenElement) {
+      if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+      else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
   }
 }
 

@@ -582,6 +582,24 @@ a { text-decoration: none; color: inherit; }
   user-select: none;
 }
 
+/* In-Page Mobile Fullscreen (Không kích hoạt popup hướng dẫn của Chrome) */
+.player-wrapper.is-mobile-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  border-radius: 0 !important;
+  z-index: 999999 !important;
+  background: #000 !important;
+  box-shadow: none !important;
+}
+
+body.has-mobile-fullscreen {
+  overflow: hidden !important;
+}
+
 #videoPlayer {
   position: absolute;
   inset: 0;
@@ -687,7 +705,7 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: clamp(40px, 8vw, 68px);
   z-index: 10;
   opacity: 1;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1271,7 +1289,7 @@ a { text-decoration: none; color: inherit; }
   }
 
   .player-center-controls {
-    gap: 20px;
+    gap: 40px;
   }
   .center-btn.seek-btn {
     width: 46px;
@@ -1353,7 +1371,7 @@ a { text-decoration: none; color: inherit; }
 
   /* Watch page */
   .player-center-controls {
-    gap: 16px;
+    gap: 30px;
   }
   .center-btn.seek-btn {
     width: 42px;
