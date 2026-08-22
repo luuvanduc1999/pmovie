@@ -9,22 +9,26 @@
     "year": 2024,
     "genre": "Phim hành động",
     "rating": 8.7,
-    "description": "Cuộc chiến bảo vệ mẫu vật cuối cùng từ một dự án bí mật được gọi là Chương trình Bạo chúa do Hàn Quốc tiến hành. Trong đó, Paul (Kim Kang Woo) thuộc cơ quan tình báo nước ngoài đang tìm cách chiếm đọat; cục trưởng Choi (Kim Seon Ho) lại bất chấp mệnh lệnh từ cấp trên, quyết định giữ an toàn cho mẫu vật bằng mọi giá, kể cả phải đối đầu bất kỳ ai ngáng đường. Theo đó, Lim Sang (Cha Seung Won) dưới trướng Choi có nhiệm vụ xóa sạch mọi bằng chứng liên quan đến Bạo chúa. Mọi thứ càng trở nên phức tạp khi mẫu vật bị thất lạc trong quá trình vận chuyển và rơi vào tay Chae Ja Gyeong (Jo Yoon Soo) - nữ sát thủ mắc chứng rối loạn nhân dạng phân ly.",
+    "description": "Phim xoay quanh \"Dự án Tyrant\" - một chương trình bí mật của chính phủ Hàn Quốc nhằm tạo ra một loại virus sinh học giúp nâng cấp khả năng của con người thành siêu chiến binh. Khi CIA (Mỹ) phát hiện và ép buộc hủy bỏ dự án, mẫu vật cuối cùng đã bị đánh cắp ngay trong quá trình bàn giao. Từ đây, một cuộc truy đuổi đẫm máu diễn ra giữa ba phe phái: Cục tình báo Hàn Quốc (những người muốn giữ lại nghiên cứu), đặc vụ CIA (muốn đoạt lại và tiêu diệt mẫu vật), và các sát thủ đánh thuê ngầm. Phim mang đậm dấu ấn của đạo diễn Park Hoon-jung với nhịp độ nhanh, các pha hành động cận chiến tàn bạo, mãn nhãn và một bầu không khí vô cùng u ám.",
     "episodes": [
       {
-        "title": "Tập 1",
+        "button": "1",
+        "title": "Tập 1 - Mẫu Vật Cuối Cùng",
         "r2": "https://cdn.dmovie.online/tyrant/tyrant1-web.mp4"
       },
       {
-        "title": "Tập 2",
+        "button": "2",
+        "title": "Tập 2 - Mẫu Vật Cuối Cùng",
         "r2": "https://cdn.dmovie.online/tyrant/tyrant2-web.mp4"
       },
       {
-        "title": "Tập 3",
+        "button": "3",
+        "title": "Tập 3 - Vòng Xoáy Phản Trắc",
         "r2": "https://cdn.dmovie.online/tyrant/tyrant3-web.mp4"
       },
       {
-        "title": "Tập 4",
+        "button": "4",
+        "title": "Tập 4 - Bạo Chúa Giáng Lâm",
         "r2": "https://cdn.dmovie.online/tyrant/tyrant4-web.mp4"
       }
     ]

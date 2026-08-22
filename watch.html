@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đang xem - Dmovie</title>
   <link rel="icon" type="image/png" href="static/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
-  <link href="https://vjs.zencdn.net/8.23.4/video-js.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -40,66 +39,229 @@
   <!-- WATCH LAYOUT -->
   <main class="watch-layout">
     <div class="container">
-      <div class="watch-grid">
+      <div class="watch-container">
 
-        <!-- LEFT: PLAYER + INFO -->
-        <div class="watch-main">
-          <!-- Player -->
-          <div class="player-wrapper">
-            <div class="player-loading" id="playerLoading">
-              <div class="spinner"></div>
-              <p>Đang tải video...</p>
-            </div>
-            <video
-              id="videoPlayer"
-              class="video-js vjs-big-play-centered"
-              controls
-              preload="auto"
-              playsinline
-            ></video>
+        <!-- Player -->
+        <div class="player-wrapper" id="playerWrapper" tabindex="0">
+          <video
+            id="videoPlayer"
+            playsinline
+            webkit-playsinline
+            preload="metadata"
+          ></video>
+
+          <!-- Loading Spinner -->
+          <div class="player-loading hidden" id="playerLoading">
+            <div class="spinner"></div>
+            <p>Đang tải video...</p>
           </div>
 
-          <!-- Now Playing -->
-          <div class="now-playing-bar">
-            <div class="now-playing-info">
-              <span class="now-playing-label">Đang phát:</span>
-              <span class="now-playing-ep" id="nowPlayingEp"></span>
+          <!-- Double-Tap / Quick Seek Ripple Animations -->
+          <div class="seek-ripple left" id="seekRippleLeft">
+            <div class="ripple-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 4v6h6"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              </svg>
+              <span>-5s</span>
             </div>
-            <div class="ep-nav">
-              <button class="ep-nav-btn" id="prevEpBtn" onclick="navigateEpisode(-1)" title="Tập trước">
-                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
-              </button>
-              <button class="ep-nav-btn" id="nextEpBtn" onclick="navigateEpisode(1)" title="Tập sau">
-                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
-              </button>
+          </div>
+          <div class="seek-ripple right" id="seekRippleRight">
+            <div class="ripple-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              <span>+5s</span>
             </div>
           </div>
 
-          <!-- Movie Info -->
-          <div class="watch-info">
-            <div class="watch-info-header">
-              <div>
-                <div class="watch-title-row">
-                  <h1 class="watch-title" id="watchTitle"></h1>
-                  <span class="badge-type" id="watchType"></span>
+          <!-- Center Screen Controls (Tua -5s, Play/Pause, Tua +5s) -->
+          <div class="player-center-controls" id="playerCenterControls">
+            <button class="center-btn seek-btn" id="centerRewindBtn" title="Lùi 5 giây (←)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 4v6h6"></path>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                <text x="12" y="15" font-size="7.5" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">5</text>
+              </svg>
+              <span class="center-btn-label">-5s</span>
+            </button>
+
+            <button class="center-btn play-pause-main-btn" id="centerPlayPauseBtn" title="Phát / Tạm dừng (Space)">
+              <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6,4 20,12 6,20"/>
+              </svg>
+              <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                <rect x="6" y="4" width="4" height="16" rx="1"/>
+                <rect x="14" y="4" width="4" height="16" rx="1"/>
+              </svg>
+            </button>
+
+            <button class="center-btn seek-btn" id="centerForwardBtn" title="Tua 5 giây (→)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                <text x="12" y="15" font-size="7.5" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">5</text>
+              </svg>
+              <span class="center-btn-label">+5s</span>
+            </button>
+          </div>
+
+          <!-- Bottom Controls Overlay (Timeline + Controls bar) -->
+          <div class="player-bottom-controls" id="playerBottomControls">
+            
+            <!-- Timeline Scrubber -->
+            <div class="timeline-container" id="timelineContainer">
+              <div class="timeline-track" id="timelineTrack">
+                <div class="timeline-buffered" id="timelineBuffered"></div>
+                <div class="timeline-hover-preview" id="timelineHoverPreview"></div>
+                <div class="timeline-played" id="timelinePlayed">
+                  <div class="timeline-handle" id="timelineHandle"></div>
                 </div>
-                <div class="watch-meta" id="watchMeta"></div>
+              </div>
+              <div class="timeline-tooltip" id="timelineTooltip">00:00</div>
+            </div>
+
+            <!-- Control Actions Bar -->
+            <div class="player-controls-bar">
+              <div class="controls-left">
+                <!-- Play / Pause -->
+                <button class="ctrl-btn" id="ctrlPlayPauseBtn" title="Phát / Dừng (Space)">
+                  <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6,4 20,12 6,20"/>
+                  </svg>
+                  <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                    <rect x="6" y="4" width="4" height="16" rx="1"/>
+                    <rect x="14" y="4" width="4" height="16" rx="1"/>
+                  </svg>
+                </button>
+
+                <!-- Rewind 5s -->
+                <button class="ctrl-btn" id="ctrlRewindBtn" title="Lùi 5s (←)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 4v6h6"></path>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    <text x="12" y="15" font-size="7.5" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">5</text>
+                  </svg>
+                </button>
+
+                <!-- Forward 5s -->
+                <button class="ctrl-btn" id="ctrlForwardBtn" title="Tua 5s (→)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    <text x="12" y="15" font-size="7.5" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">5</text>
+                  </svg>
+                </button>
+
+                <!-- Volume & Slider -->
+                <div class="volume-group">
+                  <button class="ctrl-btn" id="ctrlVolumeBtn" title="Bật/Tắt âm thanh (M)">
+                    <svg class="icon-vol-high" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="icon-vol-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/>
+                      <line x1="23" y1="9" x2="17" y2="15"/>
+                      <line x1="17" y1="9" x2="23" y2="15"/>
+                    </svg>
+                  </button>
+                  <div class="volume-slider-wrap">
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" />
+                  </div>
+                </div>
+
+                <!-- Time Display -->
+                <div class="time-display" id="timeDisplay">
+                  <span id="currentTimeText">00:00</span>
+                  <span class="time-sep">/</span>
+                  <span id="durationText">00:00</span>
+                </div>
+              </div>
+
+              <div class="controls-right">
+                <!-- Speed Menu -->
+                <div class="speed-menu-wrap">
+                  <button class="ctrl-btn text-btn" id="ctrlSpeedBtn" title="Tốc độ phát">1x</button>
+                  <div class="speed-dropdown" id="speedDropdown">
+                    <div class="speed-option" data-speed="0.5">0.5x</div>
+                    <div class="speed-option" data-speed="0.75">0.75x</div>
+                    <div class="speed-option active" data-speed="1">1x (Chuẩn)</div>
+                    <div class="speed-option" data-speed="1.25">1.25x</div>
+                    <div class="speed-option" data-speed="1.5">1.5x</div>
+                    <div class="speed-option" data-speed="2">2x</div>
+                  </div>
+                </div>
+
+                <!-- Picture in Picture -->
+                <button class="ctrl-btn" id="ctrlPipBtn" title="Hình trong hình (PiP)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <rect x="13" y="12" width="7" height="6" rx="1" fill="currentColor" fill-opacity="0.3"/>
+                  </svg>
+                </button>
+
+                <!-- Fullscreen -->
+                <button class="ctrl-btn" id="ctrlFullscreenBtn" title="Toàn màn hình (F)">
+                  <svg class="icon-fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                  </svg>
+                  <svg class="icon-fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;">
+                    <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+                  </svg>
+                </button>
               </div>
             </div>
-            <p class="watch-description" id="watchDescription"></p>
           </div>
         </div>
 
-        <!-- RIGHT: EPISODE LIST -->
-        <aside class="watch-sidebar">
-          <div class="sidebar-header">
-            <h3 class="sidebar-title">Danh sách tập</h3>
+        <!-- Now Playing -->
+        <div class="now-playing-bar">
+          <div class="now-playing-info">
+            <span class="now-playing-label">Đang phát:</span>
+            <span class="now-playing-ep" id="nowPlayingEp"></span>
+          </div>
+          <div class="ep-nav">
+            <button class="ep-nav-btn" id="prevEpBtn" onclick="navigateEpisode(-1)" title="Tập trước">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <button class="ep-nav-btn" id="nextEpBtn" onclick="navigateEpisode(1)" title="Tập sau">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- EPISODES LIST (BUTTONS) -->
+        <div class="episodes-section" id="episodesSection">
+          <div class="episodes-header">
+            <div class="episodes-title-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ep-header-icon">
+                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                <polyline points="17 2 12 7 7 2"/>
+              </svg>
+              <h3 class="episodes-title">Danh sách tập</h3>
+            </div>
             <span class="ep-count" id="epCount"></span>
           </div>
-          <div class="episode-list" id="episodeList">
+          <div class="episode-btns-list" id="episodeList">
             <!-- JS render -->
           </div>
-        </aside>
+        </div>
+
+        <!-- Movie Info -->
+        <div class="watch-info">
+          <div class="watch-info-header">
+            <div>
+              <div class="watch-title-row">
+                <h1 class="watch-title" id="watchTitle"></h1>
+                <span class="badge-type" id="watchType"></span>
+              </div>
+              <div class="watch-meta" id="watchMeta"></div>
+            </div>
+          </div>
+          <p class="watch-description" id="watchDescription"></p>
+        </div>
 
       </div>
     </div>
@@ -123,7 +285,6 @@
     </div>
   </footer>
 
-  <script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
-  <script src="js/watch.js?v=16"></script>
+  <script src="js/watch.js?v=20"></script>
 </body>
 </html>
