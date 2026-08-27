@@ -240,7 +240,13 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
     hlsInstance = new Hls({
       enableWorker: true,
       lowLatencyMode: false,
-      backBufferLength: 90
+      backBufferLength: 60,
+      maxBufferLength: 30,
+      maxMaxBufferLength: 60,
+      maxBufferSize: 60 * 1000 * 1000,
+      maxBufferHole: 0.5,
+      progressive: true,
+      autoStartLoad: true
     });
     hlsInstance.loadSource(url);
     hlsInstance.attachMedia(video);
