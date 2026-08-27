@@ -116,7 +116,7 @@ function renderEpisodeList() {
     const tip = ep.title || `Tập ${ep.button || (i + 1)}`;
     return `
       <button class="ep-btn ${i === currentEpIndex ? 'active' : ''}"
-              onclick="loadEpisode(${i}, true)"
+              onclick="loadEpisode(${i}, true, true)"
               title="${tip}">
         ${label}
       </button>
@@ -124,8 +124,11 @@ function renderEpisodeList() {
   }).join('');
 }
 
-function loadEpisode(index, shouldScroll = false) {
+function loadEpisode(index, shouldScroll = false, autoPlay = false) {
   if (!movie || index < 0 || index >= movie.episodes.length) return;
+
+  const wasPlaying = videoEl && !videoEl.paused && !videoEl.ended;
+  const shouldAutoPlay = autoPlay || wasPlaying;
 
   currentEpIndex = index;
   const ep = movie.episodes[index];
@@ -146,11 +149,11 @@ function loadEpisode(index, shouldScroll = false) {
     const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
     const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
     // Nếu Drive không cho stream trực tiếp, onerror sẽ chuyển sang iframe.
-    setVideoPlayer(streamUrl, fallbackUrl);
+    setVideoPlayer(streamUrl, fallbackUrl, shouldAutoPlay);
   } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
-    setVideoPlayer(url, null);
+    setVideoPlayer(url, null, shouldAutoPlay);
   }
 
   // Update now playing
@@ -178,7 +181,7 @@ let controlsTimeout = null;
 let isDraggingTimeline = false;
 let playerInitialized = false;
 
-function setVideoPlayer(url, fallbackUrl) {
+function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
   const wrapper = document.getElementById('playerWrapper');
   let video = document.getElementById('videoPlayer');
 
@@ -192,47 +195,88 @@ function setVideoPlayer(url, fallbackUrl) {
     if (video) wrapper.replaceChild(newVideo, video);
     else wrapper.prepend(newVideo);
     video = newVideo;
+    playerInitialized = false;
   }
 
   videoEl = video;
   wrapper.classList.remove('is-iframe');
 
   const loading = document.getElementById('playerLoading');
-  loading.classList.remove('hidden');
+  if (loading) loading.classList.remove('hidden');
 
-  video.poster = movie.backdrop || movie.poster;
-  video.src = url;
+  // Reset timeline UI to 0 immediately
+  const playedBar = document.getElementById('timelinePlayed');
+  const bufferedBar = document.getElementById('timelineBuffered');
+  const currentTimeText = document.getElementById('currentTimeText');
+  const durationText = document.getElementById('durationText');
+  if (playedBar) playedBar.style.width = '0%';
+  if (bufferedBar) bufferedBar.style.width = '0%';
+  if (currentTimeText) currentTimeText.textContent = '00:00';
+  if (durationText) durationText.textContent = '00:00';
 
   if (!playerInitialized) {
     initPlayerEvents();
     playerInitialized = true;
   }
 
+  const currentSpeed = video.playbackRate || 1;
+
+  try {
+    video.pause();
+  } catch (_) {}
+
+  video.poster = movie.backdrop || movie.poster || '';
+
+  if (video.src !== url) {
+    video.src = url;
+    video.load();
+  }
+
+  video.playbackRate = currentSpeed;
+
   video.onloadedmetadata = () => {
-    loading.classList.add('hidden');
+    if (loading) loading.classList.add('hidden');
     updateDuration();
+    if (autoPlay) {
+      const p = video.play();
+      if (p !== undefined) {
+        p.catch(err => {
+          console.warn('Autoplay prevented:', err);
+          updatePlayPauseState(false);
+        });
+      }
+    }
   };
 
   video.oncanplay = () => {
-    loading.classList.add('hidden');
+    if (loading) loading.classList.add('hidden');
   };
 
   video.onwaiting = () => {
-    loading.classList.remove('hidden');
+    if (loading) loading.classList.remove('hidden');
   };
 
   video.onplaying = () => {
-    loading.classList.add('hidden');
+    if (loading) loading.classList.add('hidden');
+    updatePlayPauseState(true);
   };
 
   video.onerror = () => {
-    loading.classList.add('hidden');
+    if (loading) loading.classList.add('hidden');
     if (fallbackUrl) {
       setIframePlayer(fallbackUrl);
     }
   };
 
-  video.load();
+  if (autoPlay) {
+    const p = video.play();
+    if (p !== undefined) {
+      p.catch(err => {
+        console.warn('Autoplay pending/prevented:', err);
+        updatePlayPauseState(false);
+      });
+    }
+  }
 }
 
 function setIframePlayer(url) {
@@ -815,51 +859,8 @@ function formatTime(seconds) {
 function navigateEpisode(direction) {
   const newIndex = currentEpIndex + direction;
   if (newIndex >= 0 && newIndex < movie.episodes.length) {
-    loadEpisode(newIndex, true);
+    loadEpisode(newIndex, true, true);
   }
-}
-
-function createMovieCard(m) {
-  const isSeries = m.type === 'Phim bộ';
-  const epLabel = isSeries ? `${m.episodes.length} tập` : 'Full';
-
-  return `
-    <div class="movie-card" onclick="window.location.href='watch.html?id=${m.id}'">
-      <div class="card-poster">
-        <img
-          src="${m.poster}"
-          alt="${m.title}"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-        />
-        <div class="poster-placeholder" style="display:none">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="2" y="2" width="20" height="20" rx="3"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21,15 16,10 5,21"/>
-          </svg>
-          <span>${m.title}</span>
-        </div>
-        <div class="card-overlay">
-          <div class="play-btn">
-            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-        </div>
-        <span class="card-type-badge ${isSeries ? 'series' : ''}">${isSeries ? 'Bộ' : 'Lẻ'}</span>
-        <span class="card-ep-badge">${epLabel}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-title" title="${m.title}">${m.title}</div>
-        <div class="card-meta">
-          <span class="card-year">${m.year}</span>
-          <span class="card-rating">
-            <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-            ${m.rating}
-          </span>
-        </div>
-        <div class="card-genre">${m.genre}</div>
-      </div>
-    </div>
-  `;
 }
 
 loadData();
