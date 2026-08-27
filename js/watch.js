@@ -193,6 +193,7 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
     newVideo.setAttribute('playsinline', '');
     newVideo.setAttribute('webkit-playsinline', '');
     newVideo.setAttribute('preload', 'metadata');
+    newVideo.setAttribute('crossorigin', 'anonymous');
     if (video) wrapper.replaceChild(newVideo, video);
     else wrapper.prepend(newVideo);
     video = newVideo;
@@ -246,7 +247,10 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
       maxBufferSize: 60 * 1000 * 1000,
       maxBufferHole: 0.5,
       progressive: true,
-      autoStartLoad: true
+      autoStartLoad: true,
+      xhrSetup: function (xhr) {
+        xhr.withCredentials = false;
+      }
     });
     hlsInstance.loadSource(url);
     hlsInstance.attachMedia(video);
