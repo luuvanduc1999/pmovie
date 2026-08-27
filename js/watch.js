@@ -592,7 +592,7 @@ function initTimelineEvents() {
 
   if (!container || !track) return;
 
-  let currentSeekPos = 0;
+  let isMouseDown = false;
 
   const updateVisualSeek = (e) => {
     if (!videoEl || isNaN(videoEl.duration) || videoEl.duration === 0) return;
@@ -609,11 +609,24 @@ function initTimelineEvents() {
 
   const commitSeek = () => {
     if (!videoEl || isNaN(videoEl.duration) || videoEl.duration === 0) return;
-    videoEl.currentTime = currentSeekPos * videoEl.duration;
+    const targetTime = currentSeekPos * videoEl.duration;
+    if (typeof videoEl.fastSeek === 'function') {
+      videoEl.fastSeek(targetTime);
+    } else {
+      videoEl.currentTime = targetTime;
+    }
     updateTimelineProgress();
   };
 
+  container.addEventListener('click', (e) => {
+    updateVisualSeek(e);
+    commitSeek();
+    showControls();
+    resetControlsTimeout();
+  });
+
   container.addEventListener('mousedown', (e) => {
+    isMouseDown = true;
     isDraggingTimeline = true;
     updateVisualSeek(e);
     showControls();
@@ -631,6 +644,7 @@ function initTimelineEvents() {
       commitSeek();
       resetControlsTimeout();
     }
+    isMouseDown = false;
   });
 
   // Touch scrubbing on mobile
