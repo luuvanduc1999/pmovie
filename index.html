@@ -1,103 +1,101 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dmovie - Xem Phim Online</title>
+  <title>DMovie - Xem Phim Online Miễn Phí</title>
+  <meta name="description"
+    content="DMovie - Trang web xem phim trực tuyến chất lượng cao, chuẩn rạp với phong cách Cinematic tối giản." />
   <link rel="icon" type="image/png" href="static/logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=60" />
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
+  <!-- TOP NAVBAR (Stitch Exact) -->
+  <header class="navbar" id="topNavbar">
     <div class="navbar-inner">
+      <!-- Brand Logo -->
       <a href="index.html" class="logo">
-        <img src="static/logo.png" class="logo-mark" alt="PMovie" />
-        <span><span class="logo-p">D</span>Movie</span>
+        <span>DMovie</span>
       </a>
-      <nav class="nav-links">
-        <a href="index.html" class="nav-link active">Trang chủ</a>
-        <a href="index.html?type=Phim+lẻ" class="nav-link">Phim lẻ</a>
-        <a href="index.html?type=Phim+bộ" class="nav-link">Phim bộ</a>
-      </nav>
-      <div class="search-bar">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm phim..." />
+
+      <!-- Trailing Action Icons -->
+      <div class="nav-actions">
+        <button class="nav-icon-btn" id="searchToggle" title="Tìm kiếm (Ctrl+K hoặc /)" aria-label="Tìm kiếm">
+          <span class="material-symbols-outlined">search</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- HERO BANNER -->
+  <!-- SEARCH OVERLAY / MODAL -->
+  <div class="search-overlay" id="searchOverlay" role="dialog" aria-modal="true">
+    <div class="search-modal">
+      <div class="search-input-box">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm phim theo tên, thể loại..." autocomplete="off" />
+        <span class="search-close-badge" id="searchClose">ESC</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION (Stitch Exact) -->
   <section class="hero" id="heroBanner">
-    <div class="hero-overlay"></div>
+    <div class="hero-bg-container">
+      <div class="hero-bg-image" id="heroBg"></div>
+      <div class="hero-gradient-x"></div>
+      <div class="hero-gradient-y"></div>
+    </div>
+
     <div class="hero-content">
-      <img class="hero-poster" id="heroPoster" alt="" />
-      <div class="hero-details">
-        <span class="hero-badge" id="heroBadge"></span>
-        <h1 class="hero-title" id="heroTitle"></h1>
-        <p class="hero-desc" id="heroDesc"></p>
-        <div class="hero-meta" id="heroMeta"></div>
-        <div class="hero-actions">
-          <a href="#" class="btn btn-primary" id="heroWatch">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5,3 19,12 5,21" />
-            </svg>
-            Xem Ngay
-          </a>
-          <button class="btn btn-secondary" id="heroInfo">Chi Tiết</button>
-        </div>
+      <h1 class="hero-title" id="heroTitle">Đang tải...</h1>
+
+      <!-- Metadata -->
+      <div class="hero-meta" id="heroMeta"></div>
+
+      <!-- Description -->
+      <p class="hero-desc" id="heroDesc"></p>
+
+      <!-- Actions -->
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary" id="heroWatch">
+          <span class="material-symbols-outlined fill">play_arrow</span>
+          Xem Ngay
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- FILTER TABS -->
-  <section class="filter-section">
-    <div class="container">
-      <div class="filter-tabs">
-        <button class="filter-tab active" data-type="all">Tất cả</button>
-        <button class="filter-tab" data-type="Phim lẻ">Phim lẻ</button>
-        <button class="filter-tab" data-type="Phim bộ">Phim bộ</button>
-      </div>
+  <!-- CONTENT GRID SECTION (Stitch Exact 6-Column) -->
+  <main class="main-content" style="padding-top: 48px;">
+    <div id="sectionsContainer">
+      <!-- Dynamic movie sections generated by JS (Phim lẻ, Phim bộ) -->
     </div>
-  </section>
 
-  <!-- MOVIE GRID -->
-  <main class="main-content">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title" id="sectionTitle">Tất cả phim</h2>
-        <span class="movie-count" id="movieCount"></span>
-      </div>
-      <div class="movie-grid" id="movieGrid">
-        <!-- JS render -->
-      </div>
-      <div class="empty-state" id="emptyState" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <p>Không tìm thấy phim nào</p>
-      </div>
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <span class="material-symbols-outlined">search_off</span>
+      <p>Không tìm thấy phim nào phù hợp</p>
     </div>
   </main>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (Stitch Exact) -->
   <footer class="footer">
-    <div class="container">
-      <p class="footer-logo"><span class="logo-p">D</span>Movie</p>
-      <p class="footer-text">© 2024 DMovie. Trang web xem phim trực tuyến được tạo bởi một con vịt.</p>
+    <div class="footer-inner">
+      <div class="footer-brand">DMovie</div>
+      <div class="footer-copy">© 2024 DMovie. Nền tảng xem phim trực tuyến của một con vịt.</div>
     </div>
   </footer>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=40"></script>
 </body>
 
 </html>

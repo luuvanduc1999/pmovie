@@ -33,27 +33,35 @@ async function loadData() {
 function renderPage(allMovies) {
   document.title = `${movie.title} - DMovie`;
 
-  // Breadcrumb
-  document.getElementById('breadcrumbTitle').textContent = movie.title;
-
   // Movie info
-  const isSeries = movie.type === 'Phim bộ';
   document.getElementById('watchTitle').textContent = movie.title;
 
-  const typeEl = document.getElementById('watchType');
-  typeEl.textContent = movie.type;
-  if (isSeries) typeEl.classList.add('series');
+  const ratingScore = parseFloat(movie.rating) || 8.5;
+  const fullStars = Math.min(5, Math.floor(ratingScore / 2));
+  let starsHtml = '';
+  for (let i = 0; i < 5; i++) {
+    if (i < fullStars) {
+      starsHtml += `<span class="material-symbols-outlined fill">star</span>`;
+    } else {
+      starsHtml += `<span class="material-symbols-outlined unfilled">star</span>`;
+    }
+  }
 
   document.getElementById('watchMeta').innerHTML = `
-    <span class="meta-tag"><span class="meta-star">★</span> ${movie.rating}/10</span>
-    <span class="meta-tag">📅 ${movie.year}</span>
-    <span class="meta-tag">🎬 ${movie.genre}</span>
+    <span class="hero-badge">${movie.genre || 'Hành động'}</span>
+    <span class="hero-badge">${movie.type}</span>
+    <span>${movie.year}</span>
+    <span class="hero-stars">
+      ${starsHtml}
+      <span style="margin-left: 6px; font-weight: 600; color: #fff;">${movie.rating}/10</span>
+    </span>
   `;
 
   document.getElementById('watchDescription').textContent = movie.description;
 
   // Episode count
-  document.getElementById('epCount').textContent = `${movie.episodes.length} tập`;
+  const epCountEl = document.getElementById('epCount');
+  if (epCountEl) epCountEl.textContent = `${movie.episodes.length} tập`;
 
   // Render episode list
   renderEpisodeList();
@@ -70,8 +78,44 @@ function renderPage(allMovies) {
   if (related.length) {
     relatedGrid.innerHTML = related.map(m => createMovieCard(m)).join('');
   } else {
-    document.querySelector('.related-section').style.display = 'none';
+    const relatedSec = document.querySelector('.watch-related-section') || document.querySelector('.related-section');
+    if (relatedSec) relatedSec.style.display = 'none';
   }
+}
+
+function createMovieCard(movie) {
+  const isSeries = movie.type === 'Phim bộ' || (movie.episodes && movie.episodes.length > 1);
+  const epCount = movie.episodes ? movie.episodes.length : 1;
+  const epLabel = isSeries ? `${epCount} tập` : 'Full';
+
+  return `
+    <a class="movie-card" href="watch.html?id=${movie.id}">
+      <div class="card-poster">
+        <img
+          src="${movie.poster}"
+          alt="${movie.title}"
+          loading="lazy"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+        />
+        <div class="poster-placeholder" style="display:none">
+          <span class="material-symbols-outlined" style="font-size:36px;">movie</span>
+        </div>
+        <div class="card-overlay">
+          <div class="play-circle-btn">
+            <span class="material-symbols-outlined fill">play_arrow</span>
+          </div>
+        </div>
+        <span class="card-ep-badge ${isSeries ? 'series' : ''}">${epLabel}</span>
+      </div>
+      <div class="card-details">
+        <h3 class="card-title" title="${movie.title}">${movie.title}</h3>
+        <div class="card-meta-line">
+          <span>${movie.year} • ${epLabel}</span>
+          <span>${movie.rating} ★</span>
+        </div>
+      </div>
+    </a>
+  `;
 }
 
 function renderEpisodeList() {
