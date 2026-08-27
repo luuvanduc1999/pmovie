@@ -241,11 +241,16 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
     hlsInstance = new Hls({
       enableWorker: true,
       lowLatencyMode: false,
-      backBufferLength: 60,
-      maxBufferLength: 30,
-      maxMaxBufferLength: 60,
-      maxBufferSize: 60 * 1000 * 1000,
-      maxBufferHole: 0.5,
+      backBufferLength: 30,
+      maxBufferLength: 20,
+      maxMaxBufferLength: 30,
+      maxBufferSize: 30 * 1000 * 1000,
+      maxBufferHole: 0.1,
+      highBufferWatchdogPeriod: 1,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 5,
+      maxFragLookUpTolerance: 0.25,
+      startFragPrefetch: true,
       progressive: true,
       autoStartLoad: true,
       xhrSetup: function (xhr) {
@@ -308,6 +313,14 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
 
   video.onwaiting = () => {
     if (loading) loading.classList.remove('hidden');
+  };
+
+  video.onseeking = () => {
+    if (loading) loading.classList.remove('hidden');
+  };
+
+  video.onseeked = () => {
+    if (loading) loading.classList.add('hidden');
   };
 
   video.onplaying = () => {
@@ -579,30 +592,43 @@ function initTimelineEvents() {
 
   if (!container || !track) return;
 
-  const handleSeek = (e) => {
-    if (!videoEl || isNaN(videoEl.duration)) return;
+  let currentSeekPos = 0;
+
+  const updateVisualSeek = (e) => {
+    if (!videoEl || isNaN(videoEl.duration) || videoEl.duration === 0) return;
     const rect = track.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    videoEl.currentTime = pos * videoEl.duration;
+    currentSeekPos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const targetTime = currentSeekPos * videoEl.duration;
+
+    const playedBar = document.getElementById('timelinePlayed');
+    const currentTimeText = document.getElementById('currentTimeText');
+    if (playedBar) playedBar.style.width = `${currentSeekPos * 100}%`;
+    if (currentTimeText) currentTimeText.textContent = formatTime(targetTime);
+  };
+
+  const commitSeek = () => {
+    if (!videoEl || isNaN(videoEl.duration) || videoEl.duration === 0) return;
+    videoEl.currentTime = currentSeekPos * videoEl.duration;
     updateTimelineProgress();
   };
 
   container.addEventListener('mousedown', (e) => {
     isDraggingTimeline = true;
-    handleSeek(e);
+    updateVisualSeek(e);
     showControls();
   });
 
   window.addEventListener('mousemove', (e) => {
     if (isDraggingTimeline) {
-      handleSeek(e);
+      updateVisualSeek(e);
     }
   });
 
   window.addEventListener('mouseup', () => {
     if (isDraggingTimeline) {
       isDraggingTimeline = false;
+      commitSeek();
       resetControlsTimeout();
     }
   });
@@ -610,18 +636,21 @@ function initTimelineEvents() {
   // Touch scrubbing on mobile
   container.addEventListener('touchstart', (e) => {
     isDraggingTimeline = true;
-    handleSeek(e);
+    updateVisualSeek(e);
   }, { passive: true });
 
   container.addEventListener('touchmove', (e) => {
     if (isDraggingTimeline) {
-      handleSeek(e);
+      updateVisualSeek(e);
     }
   }, { passive: true });
 
   container.addEventListener('touchend', () => {
-    isDraggingTimeline = false;
-    resetControlsTimeout();
+    if (isDraggingTimeline) {
+      isDraggingTimeline = false;
+      commitSeek();
+      resetControlsTimeout();
+    }
   });
 
   // Hover Preview Tooltip
