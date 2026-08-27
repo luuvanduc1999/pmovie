@@ -1,7 +1,25 @@
+const WATCH_HISTORY_KEY = 'dmovie_watch_history';
+
 let allMovies = [];
 let currentFilter = 'all';
 let currentHeroIndex = 0;
 let heroTimer = null;
+
+function getWatchHistory() {
+  try {
+    const raw = localStorage.getItem(WATCH_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getSavedProgress(movie) {
+  if (!movie) return null;
+  const history = getWatchHistory();
+  const key = movie.slug || String(movie.id);
+  return history[key] || null;
+}
 
 // Navbar scroll blur effect
 window.addEventListener('scroll', () => {
@@ -78,8 +96,10 @@ function renderHeroSlide(index) {
     </span>
   `;
 
-  // Watch button URL
-  const watchURL = `watch.html?slug=${movie.slug || movie.id}`;
+  // Watch button URL (with resume episode if available)
+  const saved = getSavedProgress(movie);
+  const epIndex = (saved && typeof saved.lastEpIndex === 'number') ? saved.lastEpIndex : 0;
+  const watchURL = `watch.html?slug=${movie.slug || movie.id}${epIndex > 0 ? `&ep=${epIndex + 1}` : ''}`;
   document.getElementById('heroWatch').href = watchURL;
 
   // Update dots
@@ -207,8 +227,14 @@ function createMovieCard(movie) {
   const epCount = movie.episodes ? movie.episodes.length : 1;
   const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
+  const saved = getSavedProgress(movie);
+  const epIndex = (saved && typeof saved.lastEpIndex === 'number') ? saved.lastEpIndex : 0;
+  const epProgress = saved && saved.episodes ? saved.episodes[epIndex] : null;
+  const hasProgress = epProgress && epProgress.percentage > 3 && !epProgress.completed;
+  const watchUrl = `watch.html?slug=${movie.slug || movie.id}${epIndex > 0 ? `&ep=${epIndex + 1}` : ''}`;
+
   return `
-    <a class="movie-card" href="watch.html?slug=${movie.slug || movie.id}">
+    <a class="movie-card" href="${watchUrl}">
       <div class="card-poster">
         <img
           src="${movie.poster}"
@@ -225,6 +251,7 @@ function createMovieCard(movie) {
           </div>
         </div>
         <span class="card-ep-badge ${isSeries ? 'series' : ''}">${epLabel}</span>
+        ${hasProgress ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width: ${epProgress.percentage}%"></div></div>` : ''}
       </div>
       <div class="card-details">
         <h3 class="card-title" title="${movie.title}">${movie.title}</h3>
@@ -326,8 +353,12 @@ function renderSearchResults(movies, query = '') {
     const epCount = m.episodes ? m.episodes.length : 1;
     const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
+    const saved = getSavedProgress(m);
+    const epIndex = (saved && typeof saved.lastEpIndex === 'number') ? saved.lastEpIndex : 0;
+    const watchUrl = `watch.html?slug=${m.slug || m.id}${epIndex > 0 ? `&ep=${epIndex + 1}` : ''}`;
+
     return `
-      <a class="search-item" href="watch.html?slug=${m.slug || m.id}" data-index="${index}">
+      <a class="search-item" href="${watchUrl}" data-index="${index}">
         <img
           class="search-item-poster"
           src="${m.poster}"
@@ -434,14 +465,14 @@ document.addEventListener('keydown', e => {
         updateSelectedSearchItem();
       }
     } else if (e.key === 'Enter') {
-      if (selectedSearchIndex >= 0 && currentSearchResults[selectedSearchIndex]) {
+      const targetMovie = (selectedSearchIndex >= 0 && currentSearchResults[selectedSearchIndex])
+        ? currentSearchResults[selectedSearchIndex]
+        : (currentSearchResults.length > 0 ? currentSearchResults[0] : null);
+      if (targetMovie) {
         e.preventDefault();
-        const m = currentSearchResults[selectedSearchIndex];
-        window.location.href = `watch.html?slug=${m.slug || m.id}`;
-      } else if (currentSearchResults.length > 0) {
-        e.preventDefault();
-        const m = currentSearchResults[0];
-        window.location.href = `watch.html?slug=${m.slug || m.id}`;
+        const saved = getSavedProgress(targetMovie);
+        const epIndex = (saved && typeof saved.lastEpIndex === 'number') ? saved.lastEpIndex : 0;
+        window.location.href = `watch.html?slug=${targetMovie.slug || targetMovie.id}${epIndex > 0 ? `&ep=${epIndex + 1}` : ''}`;
       }
     }
   }

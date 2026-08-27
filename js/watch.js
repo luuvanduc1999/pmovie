@@ -1,13 +1,75 @@
+const WATCH_HISTORY_KEY = 'dmovie_watch_history';
+
 let movie = null;
 let currentEpIndex = 0;
 let mediaPlayer = null;
 let hlsInstance = null;
 
+function getMovieKey(m) {
+  if (!m) return '';
+  return m.slug || String(m.id);
+}
+
+function getWatchHistory() {
+  try {
+    const raw = localStorage.getItem(WATCH_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getSavedProgress(m, epIndex = null) {
+  if (!m) return null;
+  const history = getWatchHistory();
+  const key = getMovieKey(m);
+  const movieProgress = history[key];
+  if (!movieProgress) return null;
+
+  if (epIndex !== null && epIndex !== undefined) {
+    return (movieProgress.episodes && movieProgress.episodes[epIndex]) || null;
+  }
+  return movieProgress;
+}
+
+function saveWatchProgress(time, duration) {
+  if (!movie || !videoEl || isNaN(time) || isNaN(duration) || duration <= 0) return;
+  try {
+    const history = getWatchHistory();
+    const key = getMovieKey(movie);
+    if (!history[key]) {
+      history[key] = {
+        lastEpIndex: currentEpIndex,
+        updatedAt: Date.now(),
+        episodes: {}
+      };
+    }
+
+    const isNearEnd = time >= (duration - 15) || videoEl.ended;
+    const savedTime = isNearEnd ? 0 : Math.floor(time);
+    const percentage = duration > 0 ? (savedTime / duration) * 100 : 0;
+
+    if (!history[key].episodes) history[key].episodes = {};
+    history[key].lastEpIndex = currentEpIndex;
+    history[key].updatedAt = Date.now();
+    history[key].episodes[currentEpIndex] = {
+      time: savedTime,
+      duration: Math.floor(duration),
+      percentage: Math.min(100, Math.max(0, percentage)),
+      completed: isNearEnd,
+      updatedAt: Date.now()
+    };
+
+    localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {
+    console.warn('Lỗi lưu lịch sử xem:', e);
+  }
+}
+
 async function loadData() {
   const params = new URLSearchParams(window.location.search);
   const slugParam = params.get('slug') || params.get('id');
   const epParam = parseInt(params.get('ep'), 10);
-  const epIndex = !isNaN(epParam) && epParam > 0 ? epParam - 1 : 0;
 
   if (!slugParam) {
     window.location.href = 'index.html';
@@ -25,8 +87,20 @@ async function loadData() {
       return;
     }
 
-    currentEpIndex = Math.max(0, Math.min(epIndex, movie.episodes.length - 1));
+    let initialEpIndex = 0;
+    if (!isNaN(epParam) && epParam > 0) {
+      initialEpIndex = epParam - 1;
+    } else {
+      const saved = getSavedProgress(movie);
+      if (saved && typeof saved.lastEpIndex === 'number' && saved.lastEpIndex >= 0 && saved.lastEpIndex < movie.episodes.length) {
+        initialEpIndex = saved.lastEpIndex;
+      }
+    }
+
+    currentEpIndex = Math.max(0, Math.min(initialEpIndex, movie.episodes.length - 1));
     renderPage(allMovies);
+    initResumeToastEvents();
+    initBackNavigationEvents();
   } catch (e) {
     console.error('Không thể tải dữ liệu:', e);
   }
@@ -77,8 +151,14 @@ function createMovieCard(movie) {
   const epCount = movie.episodes ? movie.episodes.length : 1;
   const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
+  const saved = getSavedProgress(movie);
+  const epIndex = (saved && typeof saved.lastEpIndex === 'number') ? saved.lastEpIndex : 0;
+  const epProgress = saved && saved.episodes ? saved.episodes[epIndex] : null;
+  const hasProgress = epProgress && epProgress.percentage > 3 && !epProgress.completed;
+  const watchUrl = `watch.html?slug=${movie.slug || movie.id}${epIndex > 0 ? `&ep=${epIndex + 1}` : ''}`;
+
   return `
-    <a class="movie-card" href="watch.html?slug=${movie.slug || movie.id}">
+    <a class="movie-card" href="${watchUrl}">
       <div class="card-poster">
         <img
           src="${movie.poster}"
@@ -95,6 +175,7 @@ function createMovieCard(movie) {
           </div>
         </div>
         <span class="card-ep-badge ${isSeries ? 'series' : ''}">${epLabel}</span>
+        ${hasProgress ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width: ${epProgress.percentage}%"></div></div>` : ''}
       </div>
       <div class="card-details">
         <h3 class="card-title" title="${movie.title}">${movie.title}</h3>
@@ -128,6 +209,11 @@ function renderEpisodeList() {
 function loadEpisode(index, shouldScroll = false, autoPlay = false) {
   if (!movie || index < 0 || index >= movie.episodes.length) return;
 
+  // Save current progress before switching episode
+  if (videoEl && !isNaN(videoEl.currentTime) && videoEl.currentTime > 2) {
+    saveWatchProgress(videoEl.currentTime, videoEl.duration);
+  }
+
   const wasPlaying = videoEl && !videoEl.paused && !videoEl.ended;
   const shouldAutoPlay = autoPlay || wasPlaying;
 
@@ -144,17 +230,22 @@ function loadEpisode(index, shouldScroll = false, autoPlay = false) {
   pageUrl.searchParams.set('ep', index + 1);
   history.replaceState(null, '', pageUrl);
 
+  // Check saved progress for this episode
+  const savedEp = getSavedProgress(movie, index);
+  let resumeTime = 0;
+  if (savedEp && savedEp.time > 5 && !savedEp.completed) {
+    resumeTime = savedEp.time;
+  }
+
   if (ep.driveId && !url) {
-    // Ưu tiên trình phát video gốc ở mọi kích thước màn hình. Iframe preview
-    // của Google Drive có thể đặt timeline sai vị trí trên mobile.
+    // Ưu tiên trình phát video gốc ở mọi kích thước màn hình
     const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
     const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
-    // Nếu Drive không cho stream trực tiếp, onerror sẽ chuyển sang iframe.
-    setVideoPlayer(streamUrl, fallbackUrl, shouldAutoPlay);
+    setVideoPlayer(streamUrl, fallbackUrl, shouldAutoPlay, resumeTime);
   } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
-    setVideoPlayer(url, null, shouldAutoPlay);
+    setVideoPlayer(url, null, shouldAutoPlay, resumeTime);
   }
 
   // Update now playing
@@ -171,10 +262,17 @@ function loadEpisode(index, shouldScroll = false, autoPlay = false) {
   document.getElementById('prevEpBtn').disabled = index === 0;
   document.getElementById('nextEpBtn').disabled = index === movie.episodes.length - 1;
 
-  const activeEl = document.querySelectorAll('.ep-btn')[index];
-  if (activeEl) activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
-
-  if (shouldScroll) window.scrollTo({ top: 64, behavior: 'smooth' });
+  // Scroll only the episode list container if needed, never the window
+  const list = document.getElementById('episodeList');
+  if (list) {
+    const activeEl = list.querySelectorAll('.ep-btn')[index];
+    if (activeEl) {
+      list.scrollTo({
+        left: activeEl.offsetLeft - (list.clientWidth / 2) + (activeEl.clientWidth / 2),
+        behavior: 'smooth'
+      });
+    }
+  }
 }
 
 let videoEl = null;
@@ -182,7 +280,7 @@ let controlsTimeout = null;
 let isDraggingTimeline = false;
 let playerInitialized = false;
 
-function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
+function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0) {
   const wrapper = document.getElementById('playerWrapper');
   let video = document.getElementById('videoPlayer');
 
@@ -212,14 +310,14 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
   const loading = document.getElementById('playerLoading');
   if (loading) loading.classList.remove('hidden');
 
-  // Reset timeline UI to 0 immediately
+  // Reset timeline UI
   const playedBar = document.getElementById('timelinePlayed');
   const bufferedBar = document.getElementById('timelineBuffered');
   const currentTimeText = document.getElementById('currentTimeText');
   const durationText = document.getElementById('durationText');
   if (playedBar) playedBar.style.width = '0%';
   if (bufferedBar) bufferedBar.style.width = '0%';
-  if (currentTimeText) currentTimeText.textContent = '00:00';
+  if (currentTimeText) currentTimeText.textContent = resumeTime > 0 ? formatTime(resumeTime) : '00:00';
   if (durationText) durationText.textContent = '00:00';
 
   if (!playerInitialized) {
@@ -234,6 +332,20 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
   } catch (_) {}
 
   video.poster = movie.backdrop || movie.poster || '';
+
+  let resumeHandled = false;
+  const applyResumeSeek = () => {
+    if (resumeHandled || resumeTime <= 5) return;
+    resumeHandled = true;
+    try {
+      if (video.duration && resumeTime >= video.duration - 10) return;
+      video.currentTime = resumeTime;
+      updateTimelineProgress();
+      showResumeToast(resumeTime);
+    } catch (err) {
+      console.warn('Seek resume error:', err);
+    }
+  };
 
   const isHls = url.includes('.m3u8');
 
@@ -262,6 +374,7 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
     hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
       if (loading) loading.classList.add('hidden');
       updateDuration();
+      applyResumeSeek();
       if (autoPlay) {
         video.play().catch(err => {
           console.warn('Autoplay prevented:', err);
@@ -296,6 +409,7 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
   video.onloadedmetadata = () => {
     if (loading) loading.classList.add('hidden');
     updateDuration();
+    applyResumeSeek();
     if (autoPlay && !isHls) {
       const p = video.play();
       if (p !== undefined) {
@@ -309,6 +423,9 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
 
   video.oncanplay = () => {
     if (loading) loading.classList.add('hidden');
+    if (resumeTime > 5 && !resumeHandled) {
+      applyResumeSeek();
+    }
   };
 
   video.onwaiting = () => {
@@ -406,6 +523,8 @@ function initPlayerEvents() {
     seekBy(5);
   });
 
+  let lastProgressSaveTime = 0;
+
   // Video element events
   video.addEventListener('play', () => {
     updatePlayPauseState(true);
@@ -415,11 +534,21 @@ function initPlayerEvents() {
   video.addEventListener('pause', () => {
     updatePlayPauseState(false);
     showControls();
+    if (video.currentTime > 2) {
+      saveWatchProgress(video.currentTime, video.duration);
+    }
   });
 
   video.addEventListener('timeupdate', () => {
     if (!isDraggingTimeline) {
       updateTimelineProgress();
+    }
+    const now = Date.now();
+    if (now - lastProgressSaveTime > 1500) {
+      lastProgressSaveTime = now;
+      if (video.currentTime > 2) {
+        saveWatchProgress(video.currentTime, video.duration);
+      }
     }
   });
 
@@ -428,6 +557,9 @@ function initPlayerEvents() {
   video.addEventListener('ended', () => {
     updatePlayPauseState(false);
     showControls();
+    if (video.duration) {
+      saveWatchProgress(video.duration, video.duration);
+    }
     // Auto next episode if available
     if (movie && currentEpIndex < movie.episodes.length - 1) {
       navigateEpisode(1);
@@ -956,4 +1088,78 @@ function navigateEpisode(direction) {
   }
 }
 
+let resumeToastTimer = null;
+
+function showResumeToast(timeInSeconds) {
+  const toast = document.getElementById('playerResumeToast');
+  const text = document.getElementById('resumeToastText');
+  if (!toast || !text) return;
+
+  text.innerHTML = `Tiếp tục xem từ <strong>${formatTime(timeInSeconds)}</strong>`;
+  toast.classList.remove('hidden');
+
+  clearTimeout(resumeToastTimer);
+  resumeToastTimer = setTimeout(() => {
+    hideResumeToast();
+  }, 4500);
+}
+
+function hideResumeToast() {
+  const toast = document.getElementById('playerResumeToast');
+  if (toast) toast.classList.add('hidden');
+  clearTimeout(resumeToastTimer);
+}
+
+function initResumeToastEvents() {
+  const restartBtn = document.getElementById('resumeRestartBtn');
+  const closeBtn = document.getElementById('resumeCloseBtn');
+
+  if (restartBtn) {
+    restartBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (videoEl) {
+        videoEl.currentTime = 0;
+        saveWatchProgress(0, videoEl.duration);
+        updateTimelineProgress();
+      }
+      hideResumeToast();
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideResumeToast();
+    });
+  }
+}
+
+function initBackNavigationEvents() {
+  const saveState = () => {
+    if (videoEl && !isNaN(videoEl.currentTime) && !isNaN(videoEl.duration) && videoEl.currentTime > 2) {
+      saveWatchProgress(videoEl.currentTime, videoEl.duration);
+    }
+  };
+
+  window.addEventListener('beforeunload', saveState);
+  window.addEventListener('pagehide', saveState);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      saveState();
+    }
+  });
+
+  const backBtn = document.querySelector('.watch-navbar-back');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      saveState();
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  }
+}
+
 loadData();
+
