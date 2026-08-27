@@ -14,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=70" />
+  <link rel="stylesheet" href="css/style.css?v=71" />
 </head>
 
 <body>
@@ -41,8 +41,15 @@
     <div class="search-modal">
       <div class="search-input-box">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm phim theo tên, thể loại..." autocomplete="off" />
+        <input type="text" id="searchInput" placeholder="Tìm kiếm phim theo tên, thể loại, diễn viên..." autocomplete="off" />
+        <button class="search-clear-btn" id="searchClear" style="display:none;" title="Xóa">
+          <span class="material-symbols-outlined">close</span>
+        </button>
         <span class="search-close-badge" id="searchClose">ESC</span>
+      </div>
+      <div class="search-results-wrapper" id="searchResultsWrapper">
+        <div class="search-section-header" id="searchSectionHeader">Gợi ý cho bạn</div>
+        <div class="search-results-list" id="searchResultsList"></div>
       </div>
     </div>
   </div>
@@ -98,7 +105,7 @@
     </div>
   </footer>
 
-  <script src="js/app.js?v=40"></script>
+  <script src="js/app.js?v=41"></script>
 </body>
 
 </html>

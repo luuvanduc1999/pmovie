@@ -255,26 +255,150 @@ function setFilter(type) {
   }
 }
 
-// ===== SEARCH OVERLAY CONTROLS =====
+// ===== SEARCH OVERLAY SYSTEM =====
 const searchOverlay = document.getElementById('searchOverlay');
 const searchInput = document.getElementById('searchInput');
 const searchToggle = document.getElementById('searchToggle');
 const searchClose = document.getElementById('searchClose');
+const searchClear = document.getElementById('searchClear');
+const searchSectionHeader = document.getElementById('searchSectionHeader');
+const searchResultsList = document.getElementById('searchResultsList');
+
+let currentSearchResults = [];
+let selectedSearchIndex = -1;
+
+function normalizeText(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .trim();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>"']/g, match => {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return map[match];
+  });
+}
+
+function searchMovies(query) {
+  const normQuery = normalizeText(query);
+  if (!normQuery) return allMovies;
+
+  const queryWords = normQuery.split(/\s+/).filter(Boolean);
+
+  return allMovies.filter(m => {
+    const episodeTitles = (m.episodes || []).map(ep => ep.title || '').join(' ');
+    const searchable = normalizeText(
+      `${m.title || ''} ${m.slug || ''} ${m.genre || ''} ${m.type || ''} ${m.description || ''} ${episodeTitles}`
+    );
+    return queryWords.every(word => searchable.includes(word));
+  });
+}
+
+function renderSearchResults(movies, query = '') {
+  if (!searchResultsList) return;
+  currentSearchResults = movies;
+  selectedSearchIndex = -1;
+
+  if (!query) {
+    if (searchSectionHeader) searchSectionHeader.textContent = 'Gợi ý cho bạn';
+  } else {
+    if (searchSectionHeader) searchSectionHeader.textContent = `Kết quả tìm kiếm (${movies.length})`;
+  }
+
+  if (!movies.length) {
+    searchResultsList.innerHTML = `
+      <div class="search-empty">
+        <span class="material-symbols-outlined">search_off</span>
+        <p>Không tìm thấy phim nào phù hợp với "<strong>${escapeHtml(query)}</strong>"</p>
+      </div>
+    `;
+    return;
+  }
+
+  searchResultsList.innerHTML = movies.map((m, index) => {
+    const isSeries = m.type === 'Phim bộ' || (m.episodes && m.episodes.length > 1);
+    const epCount = m.episodes ? m.episodes.length : 1;
+    const epLabel = isSeries ? `${epCount} tập` : 'Full';
+
+    return `
+      <a class="search-item" href="watch.html?slug=${m.slug || m.id}" data-index="${index}">
+        <img
+          class="search-item-poster"
+          src="${m.poster}"
+          alt="${m.title}"
+          loading="lazy"
+          onerror="this.onerror=null; this.src='static/logo.png';"
+        />
+        <div class="search-item-info">
+          <div class="search-item-title">${m.title}</div>
+          <div class="search-item-meta">
+            <span class="search-item-badge ${isSeries ? 'series' : ''}">${m.type || 'Phim'}</span>
+            <span>${m.year || ''}</span>
+            <span>•</span>
+            <span>${m.genre || ''}</span>
+            <span class="search-item-rating">
+              <span class="material-symbols-outlined">star</span>
+              ${m.rating || '8.5'}
+            </span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined search-item-arrow">arrow_forward</span>
+      </a>
+    `;
+  }).join('');
+}
+
+function updateSelectedSearchItem() {
+  const items = searchResultsList?.querySelectorAll('.search-item');
+  if (!items) return;
+  items.forEach((item, idx) => {
+    if (idx === selectedSearchIndex) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
 
 function openSearch() {
   if (!searchOverlay) return;
   searchOverlay.classList.add('open');
-  setTimeout(() => searchInput.focus(), 50);
+  if (searchInput) {
+    searchInput.value = '';
+    if (searchClear) searchClear.style.display = 'none';
+    renderSearchResults(allMovies, '');
+    setTimeout(() => searchInput.focus(), 60);
+  }
 }
 
 function closeSearch() {
   if (!searchOverlay) return;
   searchOverlay.classList.remove('open');
-  searchInput.value = '';
+  if (searchInput) searchInput.value = '';
+  if (searchClear) searchClear.style.display = 'none';
+  selectedSearchIndex = -1;
 }
 
 if (searchToggle) searchToggle.addEventListener('click', openSearch);
 if (searchClose) searchClose.addEventListener('click', closeSearch);
+
+if (searchClear) {
+  searchClear.addEventListener('click', () => {
+    if (searchInput) {
+      searchInput.value = '';
+      searchClear.style.display = 'none';
+      renderSearchResults(allMovies, '');
+      searchInput.focus();
+    }
+  });
+}
 
 if (searchOverlay) {
   searchOverlay.addEventListener('click', e => {
@@ -283,30 +407,58 @@ if (searchOverlay) {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeSearch();
-  if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
-    if (searchOverlay && !searchOverlay.classList.contains('open') && document.activeElement.tagName !== 'INPUT') {
+  if (e.key === 'Escape') {
+    closeSearch();
+  }
+
+  // Open search on Ctrl+K, Cmd+K, or /
+  if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && document.activeElement.tagName !== 'INPUT')) {
+    if (searchOverlay && !searchOverlay.classList.contains('open')) {
       e.preventDefault();
       openSearch();
+    }
+  }
+
+  // Arrow navigation inside open search overlay
+  if (searchOverlay && searchOverlay.classList.contains('open')) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (currentSearchResults.length > 0) {
+        selectedSearchIndex = (selectedSearchIndex + 1) % currentSearchResults.length;
+        updateSelectedSearchItem();
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (currentSearchResults.length > 0) {
+        selectedSearchIndex = (selectedSearchIndex - 1 + currentSearchResults.length) % currentSearchResults.length;
+        updateSelectedSearchItem();
+      }
+    } else if (e.key === 'Enter') {
+      if (selectedSearchIndex >= 0 && currentSearchResults[selectedSearchIndex]) {
+        e.preventDefault();
+        const m = currentSearchResults[selectedSearchIndex];
+        window.location.href = `watch.html?slug=${m.slug || m.id}`;
+      } else if (currentSearchResults.length > 0) {
+        e.preventDefault();
+        const m = currentSearchResults[0];
+        window.location.href = `watch.html?slug=${m.slug || m.id}`;
+      }
     }
   }
 });
 
 if (searchInput) {
   searchInput.addEventListener('input', e => {
-    const query = e.target.value.trim().toLowerCase();
-    if (!query) {
-      setFilter('all');
-      return;
+    const rawVal = e.target.value;
+    const query = rawVal.trim();
+    if (searchClear) {
+      searchClear.style.display = query.length > 0 ? 'flex' : 'none';
     }
-    const filtered = allMovies.filter(m =>
-      m.title.toLowerCase().includes(query) ||
-      (m.genre && m.genre.toLowerCase().includes(query)) ||
-      (m.type && m.type.toLowerCase().includes(query))
-    );
-    currentFilter = `Kết quả: "${e.target.value.trim()}"`;
-    renderMovies(filtered);
+
+    const filtered = searchMovies(query);
+    renderSearchResults(filtered, query);
   });
 }
 
 loadMovies();
+
