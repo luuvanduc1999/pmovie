@@ -1,5 +1,59 @@
 [
   {
+    "id": 2,
+    "slug": "light-shop",
+    "title": "Light Shop",
+    "poster": "static/poster/lightshop.jpg",
+    "backdrop": "static/backdrop/lightshop.jpg",
+    "type": "Phim bộ",
+    "year": 2024,
+    "genre": "Bí ẩn, Kinh dị",
+    "rating": 8.2,
+    "description": "Light Shop (Tiệm Ánh Sáng) xoay quanh một cửa hàng bán đèn kỳ lạ nằm sâu trong con hẻm tối do một người đàn ông bí ẩn (Ju Ji-hoon) quản lý. Cửa hàng là nơi kết nối giữa ranh giới sự sống và cái chết, thu hút những vị khách kỳ lạ mang theo những uẩn khúc chưa thể giải đáp trong quá khứ.",
+    "episodes": [
+      {
+        "button": "1",
+        "title": "Tập 1",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop1-web.mp4"
+      },
+      {
+        "button": "2",
+        "title": "Tập 2",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop2-web.mp4"
+      },
+      {
+        "button": "3",
+        "title": "Tập 3",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop3-web.mp4"
+      },
+      {
+        "button": "4",
+        "title": "Tập 4",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop4-web.mp4"
+      },
+      {
+        "button": "5",
+        "title": "Tập 5",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop5-web.mp4"
+      },
+      {
+        "button": "6",
+        "title": "Tập 6",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop6-web.mp4"
+      },
+      {
+        "button": "7",
+        "title": "Tập 7",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop7-web.mp4"
+      },
+      {
+        "button": "8",
+        "title": "Tập 8",
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop8-web.mp4"
+      }
+    ]
+  },
+  {
     "id": 1,
     "slug": "the-tyrant",
     "title": "The Tyrant",

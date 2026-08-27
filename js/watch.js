@@ -4,11 +4,11 @@ let mediaPlayer = null;
 
 async function loadData() {
   const params = new URLSearchParams(window.location.search);
-  const id = parseInt(params.get('id'));
+  const slugParam = params.get('slug') || params.get('id');
   const epParam = parseInt(params.get('ep'), 10);
   const epIndex = !isNaN(epParam) && epParam > 0 ? epParam - 1 : 0;
 
-  if (!id) {
+  if (!slugParam) {
     window.location.href = 'index.html';
     return;
   }
@@ -16,7 +16,8 @@ async function loadData() {
   try {
     const res = await fetch('data.json');
     const allMovies = await res.json();
-    movie = allMovies.find(m => m.id === id);
+    allMovies.sort((a, b) => (b.id || 0) - (a.id || 0));
+    movie = allMovies.find(m => m.slug === slugParam || String(m.id) === String(slugParam));
 
     if (!movie) {
       window.location.href = 'index.html';
@@ -68,19 +69,6 @@ function renderPage(allMovies) {
 
   // Load player
   loadEpisode(currentEpIndex);
-
-  // Related movies (same genre or type, exclude current)
-  const related = allMovies
-    .filter(m => m.id !== movie.id && (m.genre === movie.genre || m.type === movie.type))
-    .slice(0, 6);
-
-  const relatedGrid = document.getElementById('relatedGrid');
-  if (related.length) {
-    relatedGrid.innerHTML = related.map(m => createMovieCard(m)).join('');
-  } else {
-    const relatedSec = document.querySelector('.watch-related-section') || document.querySelector('.related-section');
-    if (relatedSec) relatedSec.style.display = 'none';
-  }
 }
 
 function createMovieCard(movie) {
@@ -89,7 +77,7 @@ function createMovieCard(movie) {
   const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
   return `
-    <a class="movie-card" href="watch.html?id=${movie.id}">
+    <a class="movie-card" href="watch.html?slug=${movie.slug || movie.id}">
       <div class="card-poster">
         <img
           src="${movie.poster}"
@@ -145,6 +133,10 @@ function loadEpisode(index, shouldScroll = false) {
 
   // Update URL without reload
   const pageUrl = new URL(window.location);
+  if (movie.slug) {
+    pageUrl.searchParams.set('slug', movie.slug);
+    pageUrl.searchParams.delete('id');
+  }
   pageUrl.searchParams.set('ep', index + 1);
   history.replaceState(null, '', pageUrl);
 

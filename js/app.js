@@ -1,5 +1,7 @@
 let allMovies = [];
 let currentFilter = 'all';
+let currentHeroIndex = 0;
+let heroTimer = null;
 
 // Navbar scroll blur effect
 window.addEventListener('scroll', () => {
@@ -15,7 +17,9 @@ async function loadMovies() {
   try {
     const res = await fetch('data.json');
     allMovies = await res.json();
-    initHero();
+    // Sắp xếp danh sách phim theo ID giảm dần (phim mới nhất lên đầu)
+    allMovies.sort((a, b) => (b.id || 0) - (a.id || 0));
+    initHeroCarousel();
     renderMovies(allMovies);
     handleURLParams();
   } catch (e) {
@@ -23,24 +27,32 @@ async function loadMovies() {
   }
 }
 
-function initHero() {
+// ===== HERO CAROUSEL SYSTEM =====
+function initHeroCarousel() {
   if (!allMovies.length) return;
-  const featured = allMovies[Math.floor(Math.random() * allMovies.length)];
+
+  renderHeroSlide(0);
+  renderHeroPagination();
+  startHeroAutoSlide();
+}
+
+function renderHeroSlide(index) {
+  if (!allMovies.length) return;
+  currentHeroIndex = (index + allMovies.length) % allMovies.length;
+  const movie = allMovies[currentHeroIndex];
 
   // Background Image
   const heroBg = document.getElementById('heroBg');
   if (heroBg) {
-    heroBg.style.backgroundImage = `url('${featured.backdrop || featured.poster}')`;
+    heroBg.style.backgroundImage = `url('${movie.backdrop || movie.poster}')`;
   }
 
-  // Title
-  document.getElementById('heroTitle').textContent = featured.title;
-  
-  // Description
-  document.getElementById('heroDesc').textContent = featured.description;
+  // Title & Description
+  document.getElementById('heroTitle').textContent = movie.title;
+  document.getElementById('heroDesc').textContent = movie.description;
 
   // Metadata: badges, year, stars
-  const ratingScore = parseFloat(featured.rating) || 8.5;
+  const ratingScore = parseFloat(movie.rating) || 8.5;
   const fullStars = Math.min(5, Math.floor(ratingScore / 2));
   let starsHtml = '';
   for (let i = 0; i < 5; i++) {
@@ -51,26 +63,61 @@ function initHero() {
     }
   }
 
-  const isSeries = featured.type === 'Phim bộ' || (featured.episodes && featured.episodes.length > 1);
-  const epCount = featured.episodes ? featured.episodes.length : 1;
+  const isSeries = movie.type === 'Phim bộ' || (movie.episodes && movie.episodes.length > 1);
+  const epCount = movie.episodes ? movie.episodes.length : 1;
   const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
   document.getElementById('heroMeta').innerHTML = `
-    <span class="hero-badge">${featured.genre || 'Hành động'}</span>
-    <span class="hero-badge">${featured.type}</span>
+    <span class="hero-badge">${movie.genre || 'Hành động'}</span>
+    <span class="hero-badge">${movie.type}</span>
     <span class="hero-badge">${epLabel}</span>
-    <span>${featured.year}</span>
+    <span>${movie.year}</span>
     <span class="hero-stars">
       ${starsHtml}
-      <span style="margin-left: 6px; font-weight: 600; color: #fff;">${featured.rating}</span>
+      <span style="margin-left: 6px; font-weight: 600; color: #fff;">${movie.rating}</span>
     </span>
   `;
 
   // Watch button URL
-  const watchURL = `watch.html?id=${featured.id}`;
+  const watchURL = `watch.html?slug=${movie.slug || movie.id}`;
   document.getElementById('heroWatch').href = watchURL;
+
+  // Update dots
+  document.querySelectorAll('.hero-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentHeroIndex);
+  });
 }
 
+function renderHeroPagination() {
+  const container = document.getElementById('heroPagination');
+  if (!container) return;
+
+  if (allMovies.length <= 1) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'flex';
+  container.innerHTML = allMovies.map((_, i) => `
+    <div class="hero-dot ${i === currentHeroIndex ? 'active' : ''}" onclick="goToHeroSlide(${i})"></div>
+  `).join('');
+}
+
+function startHeroAutoSlide() {
+  if (heroTimer) clearInterval(heroTimer);
+  if (allMovies.length > 1) {
+    heroTimer = setInterval(() => {
+      renderHeroSlide(currentHeroIndex + 1);
+    }, 7000);
+  }
+}
+
+window.goToHeroSlide = function(index) {
+  renderHeroSlide(index);
+  startHeroAutoSlide(); // Reset auto timer
+};
+
+// ===== CAROUSEL MOVIE ROWS =====
 function renderMovies(movies) {
   const container = document.getElementById('sectionsContainer');
   const empty = document.getElementById('emptyState');
@@ -95,67 +142,65 @@ function renderMovies(movies) {
 
     let html = '';
 
-    // Line 1: Phim lẻ (nếu có)
+    // Line 1: Phim lẻ (dạng Carousel)
     if (singleMovies.length > 0) {
-      html += `
-        <section class="movie-section">
-          <div class="section-header">
-            <div class="section-indicator"></div>
-            <h2 class="section-title">Phim lẻ</h2>
-          </div>
-          <div class="movie-grid">
-            ${singleMovies.map(m => createMovieCard(m)).join('')}
-          </div>
-        </section>
-      `;
+      html += createCarouselSection('Phim lẻ', singleMovies);
     }
 
-    // Line 2: Phim bộ (nếu có)
+    // Line 2: Phim bộ (dạng Carousel)
     if (seriesMovies.length > 0) {
-      html += `
-        <section class="movie-section">
-          <div class="section-header">
-            <div class="section-indicator"></div>
-            <h2 class="section-title">Phim bộ</h2>
-          </div>
-          <div class="movie-grid">
-            ${seriesMovies.map(m => createMovieCard(m)).join('')}
-          </div>
-        </section>
-      `;
+      html += createCarouselSection('Phim bộ', seriesMovies);
     }
 
     // Line phụ nếu có thể loại khác
     if (otherMovies.length > 0) {
-      html += `
-        <section class="movie-section">
-          <div class="section-header">
-            <div class="section-indicator"></div>
-            <h2 class="section-title">Phim khác</h2>
-          </div>
-          <div class="movie-grid">
-            ${otherMovies.map(m => createMovieCard(m)).join('')}
-          </div>
-        </section>
-      `;
+      html += createCarouselSection('Phim khác', otherMovies);
     }
 
     container.innerHTML = html;
   } else {
-    // Khi đang chọn filter riêng hoặc tìm kiếm
-    container.innerHTML = `
-      <section class="movie-section">
-        <div class="section-header">
-          <div class="section-indicator"></div>
-          <h2 class="section-title">${currentFilter}</h2>
-        </div>
-        <div class="movie-grid">
-          ${movies.map(m => createMovieCard(m)).join('')}
-        </div>
-      </section>
-    `;
+    // Khi đang tìm kiếm
+    container.innerHTML = createCarouselSection(currentFilter, movies);
   }
 }
+
+function createCarouselSection(title, movieList) {
+  return `
+    <section class="movie-section">
+      <div class="section-header-carousel">
+        <div class="section-header-left">
+          <div class="section-indicator"></div>
+          <h2 class="section-title">${title}</h2>
+        </div>
+        <div class="carousel-nav-arrows">
+          <button class="carousel-arrow" onclick="scrollCarousel(this, -1)" title="Lùi">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="carousel-arrow" onclick="scrollCarousel(this, 1)" title="Tiến">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+      <div class="carousel-track-wrapper">
+        <div class="carousel-track">
+          ${movieList.map(m => createMovieCard(m)).join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+// Carousel scroll navigation
+window.scrollCarousel = function(btn, direction) {
+  const section = btn.closest('.movie-section');
+  if (!section) return;
+  const track = section.querySelector('.carousel-track');
+  if (track) {
+    const cardWidth = track.querySelector('.movie-card')?.offsetWidth || 220;
+    const scrollAmount = (cardWidth + 24) * 2 * direction;
+    track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+};
 
 function createMovieCard(movie) {
   const isSeries = movie.type === 'Phim bộ' || (movie.episodes && movie.episodes.length > 1);
@@ -163,7 +208,7 @@ function createMovieCard(movie) {
   const epLabel = isSeries ? `${epCount} tập` : 'Full';
 
   return `
-    <a class="movie-card" href="watch.html?id=${movie.id}">
+    <a class="movie-card" href="watch.html?slug=${movie.slug || movie.id}">
       <div class="card-poster">
         <img
           src="${movie.poster}"

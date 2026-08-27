@@ -285,9 +285,10 @@ img {
   height: 820px;
   min-height: 600px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   overflow: hidden;
   background-color: #000;
+  margin-bottom: 64px;
 }
 
 .hero-bg-container {
@@ -327,10 +328,11 @@ img {
   margin: 0 auto;
   padding-left: var(--px-desktop);
   padding-right: var(--px-desktop);
-  padding-top: 96px;
+  padding-bottom: 96px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-end;
 }
 
 .hero-title {
@@ -496,33 +498,132 @@ img {
   border-radius: var(--radius-pill);
 }
 
-.section-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text-white);
+/* ===== HERO PAGINATION DOTS (Stitch Exact) ===== */
+.hero-pagination {
+  position: absolute;
+  bottom: 40px;
+  right: var(--px-desktop);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* ===== CONTENT GRID SECTION ===== */
+.hero-dot {
+  width: 8px;
+  height: 4px;
+  background-color: var(--surface-highest);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-dot.active {
+  width: 32px;
+  background-color: var(--primary);
+}
+
+/* ===== MAIN CONTENT CONTAINER (Stitch Exact 1440px) ===== */
 .main-content {
   width: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--px-desktop) 80px;
+  padding: 0 var(--px-desktop) 96px;
 }
 
+/* ===== CAROUSEL MOVIE SECTIONS (Stitch Exact) ===== */
 .movie-section {
-  margin-bottom: 56px;
+  margin-bottom: 64px;
+  position: relative;
 }
 .movie-section:last-child {
   margin-bottom: 0;
 }
 
-/* 6-Column Grid */
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+.section-header-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.carousel-nav-arrows {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel-arrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--surface-variant);
+  background-color: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.carousel-arrow:hover {
+  border-color: var(--text-white);
+  color: var(--text-white);
+  transform: scale(1.08);
+}
+.carousel-arrow .material-symbols-outlined {
+  font-size: 22px;
+}
+
+/* Horizontal Scrolling Carousel Track */
+.carousel-track-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.carousel-track {
+  display: flex;
   gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 6px 2px 20px 2px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-track .movie-card {
+  flex: 0 0 210px;
+  min-width: 210px;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 900px) {
+  .carousel-track .movie-card {
+    flex: 0 0 170px;
+    min-width: 170px;
+  }
+}
+
+@media (max-width: 600px) {
+  .carousel-track .movie-card {
+    flex: 0 0 145px;
+    min-width: 145px;
+  }
+  .carousel-arrow {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* ===== MOVIE CARD (Stitch Exact) ===== */
