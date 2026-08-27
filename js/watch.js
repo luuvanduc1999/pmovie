@@ -1,6 +1,7 @@
 let movie = null;
 let currentEpIndex = 0;
 let mediaPlayer = null;
+let hlsInstance = null;
 
 async function loadData() {
   const params = new URLSearchParams(window.location.search);
@@ -198,6 +199,12 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
     playerInitialized = false;
   }
 
+  // Clean up previous HLS instance if any
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
+
   videoEl = video;
   wrapper.classList.remove('is-iframe');
 
@@ -227,9 +234,46 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
 
   video.poster = movie.backdrop || movie.poster || '';
 
-  if (video.src !== url) {
-    video.src = url;
-    video.load();
+  const isHls = url.includes('.m3u8');
+
+  if (isHls && window.Hls && Hls.isSupported()) {
+    hlsInstance = new Hls({
+      enableWorker: true,
+      lowLatencyMode: false,
+      backBufferLength: 90
+    });
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      if (loading) loading.classList.add('hidden');
+      updateDuration();
+      if (autoPlay) {
+        video.play().catch(err => {
+          console.warn('Autoplay prevented:', err);
+          updatePlayPauseState(false);
+        });
+      }
+    });
+    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        console.error('HLS fatal error:', data);
+        if (loading) loading.classList.add('hidden');
+        if (fallbackUrl) {
+          setIframePlayer(fallbackUrl);
+        }
+      }
+    });
+  } else if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Safari / iOS Native HLS
+    if (video.src !== url) {
+      video.src = url;
+    }
+  } else {
+    // Standard MP4 direct stream
+    if (video.src !== url) {
+      video.src = url;
+      video.load();
+    }
   }
 
   video.playbackRate = currentSpeed;
@@ -237,7 +281,7 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
   video.onloadedmetadata = () => {
     if (loading) loading.classList.add('hidden');
     updateDuration();
-    if (autoPlay) {
+    if (autoPlay && !isHls) {
       const p = video.play();
       if (p !== undefined) {
         p.catch(err => {
@@ -267,19 +311,14 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false) {
       setIframePlayer(fallbackUrl);
     }
   };
-
-  if (autoPlay) {
-    const p = video.play();
-    if (p !== undefined) {
-      p.catch(err => {
-        console.warn('Autoplay pending/prevented:', err);
-        updatePlayPauseState(false);
-      });
-    }
-  }
 }
 
 function setIframePlayer(url) {
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
+
   const wrapper = document.getElementById('playerWrapper');
   let player = document.getElementById('videoPlayer');
 
@@ -298,7 +337,8 @@ function setIframePlayer(url) {
   wrapper.classList.add('is-iframe');
   player.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;';
   player.src = url;
-  document.getElementById('playerLoading').classList.add('hidden');
+  const loading = document.getElementById('playerLoading');
+  if (loading) loading.classList.add('hidden');
 }
 
 function initPlayerEvents() {
