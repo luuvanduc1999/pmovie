@@ -14,42 +14,42 @@
       {
         "button": "1",
         "title": "Tập 1",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop1-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop1-web.mp4?v=1"
       },
       {
         "button": "2",
         "title": "Tập 2",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop2-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop2-web.mp4?v=1"
       },
       {
         "button": "3",
         "title": "Tập 3",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop3-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop3-web.mp4?v=1"
       },
       {
         "button": "4",
         "title": "Tập 4",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop4-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop4-web.mp4?v=1"
       },
       {
         "button": "5",
         "title": "Tập 5",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop5-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop5-web.mp4?v=1"
       },
       {
         "button": "6",
         "title": "Tập 6",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop6-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop6-web.mp4?v=1"
       },
       {
         "button": "7",
         "title": "Tập 7",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop7-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop7-web.mp4?v=1"
       },
       {
         "button": "8",
         "title": "Tập 8",
-        "r2": "https://cdn.dmovie.online/LightShop/lightshop8-web.mp4"
+        "r2": "https://cdn.dmovie.online/LightShop/lightshop8-web.mp4?v=1"
       }
     ]
   },
@@ -68,22 +68,22 @@
       {
         "button": "1",
         "title": "Tập 1 - Mẫu Vật Cuối Cùng",
-        "r2": "https://cdn.dmovie.online/tyrant/tyrant1-web.mp4"
+        "r2": "https://cdn.dmovie.online/tyrant/tyrant1-web.mp4?v=1"
       },
       {
         "button": "2",
         "title": "Tập 2 - Mẫu Vật Cuối Cùng",
-        "r2": "https://cdn.dmovie.online/tyrant/tyrant2-web.mp4"
+        "r2": "https://cdn.dmovie.online/tyrant/tyrant2-web.mp4?v=1"
       },
       {
         "button": "3",
         "title": "Tập 3 - Vòng Xoáy Phản Trắc",
-        "r2": "https://cdn.dmovie.online/tyrant/tyrant3-web.mp4"
+        "r2": "https://cdn.dmovie.online/tyrant/tyrant3-web.mp4?v=1"
       },
       {
         "button": "4",
         "title": "Tập 4 - Bạo Chúa Giáng Lâm",
-        "r2": "https://cdn.dmovie.online/tyrant/tyrant4-web.mp4"
+        "r2": "https://cdn.dmovie.online/tyrant/tyrant4-web.mp4?v=1"
       }
     ]
   }

@@ -14,7 +14,7 @@ async function loadData() {
   }
 
   try {
-    const res = await fetch('data.json');
+    const res = await fetch('data.json?v=' + Date.now());
     const allMovies = await res.json();
     allMovies.sort((a, b) => (b.id || 0) - (a.id || 0));
     movie = allMovies.find(m => m.slug === slugParam || String(m.id) === String(slugParam));

@@ -15,7 +15,7 @@ window.addEventListener('scroll', () => {
 
 async function loadMovies() {
   try {
-    const res = await fetch('data.json');
+    const res = await fetch('data.json?v=' + Date.now());
     allMovies = await res.json();
     // Sắp xếp danh sách phim theo ID giảm dần (phim mới nhất lên đầu)
     allMovies.sort((a, b) => (b.id || 0) - (a.id || 0));
