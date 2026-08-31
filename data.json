@@ -1,5 +1,24 @@
 [
   {
+    "id": 5,
+    "slug": "devils-plan-2",
+    "title": "The Devil's Plan: Season 2",
+    "poster": "static/poster/devilsplan2.webp",
+    "backdrop": "static/backdrop/devilsplan2.webp",
+    "type": "Chương trình truyền hình",
+    "year": 2025,
+    "genre": "Trò chơi sinh tồn, Trí tuệ, Giật gân",
+    "rating": 8.9,
+    "description": "The Devil's Plan: Season 2 (Kế Hoạch Của Quỷ Dữ Phần 2: Căn Phòng Tử Thần) quy tụ 14 người chơi xuất chúng từ nhiều lĩnh vực tham gia vào cuộc chiến cân não và tâm lý đỉnh cao. Với những luật chơi mới khắc nghiệt và khu vực 'Căn phòng tử thần', các thí sinh phải vận dụng tối đa trí tuệ, chiến lược và sự liên minh để giành lấy số tiền thưởng khổng lồ.",
+    "episodes": [
+      {
+        "button": "1",
+        "title": "Tập 1",
+        "r2": "https://cdn.dmovie.online/DevilsPlan2/hls/ep1/index.m3u8?v=1"
+      }
+    ]
+  },
+  {
     "id": 4,
     "slug": "deaths-game",
     "title": "Death's Game",
