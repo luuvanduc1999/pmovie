@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=75" />
+  <link rel="stylesheet" href="css/style.css?v=99" />
 </head>
 
 <body class="watch-page">
@@ -38,7 +38,10 @@
     <!-- Video Player Section (16:9 Aspect Ratio) -->
     <section class="video-section">
       <div class="player-wrapper" id="playerWrapper" tabindex="0">
-        <video id="videoPlayer" playsinline webkit-playsinline preload="metadata"></video>
+        <video id="videoPlayer" playsinline webkit-playsinline preload="metadata" crossorigin="anonymous"></video>
+
+        <!-- Custom Subtitles Overlay (Zero Background, Crisp Black Stroke) -->
+        <div class="custom-subtitle-overlay" id="customSubtitleOverlay"></div>
 
         <!-- Loading Spinner -->
         <div class="player-loading hidden" id="playerLoading">
@@ -161,11 +164,6 @@
                 </div>
               </div>
 
-              <!-- PiP -->
-              <button class="ctrl-btn" id="ctrlPipBtn" title="Hình trong hình (PiP)">
-                <span class="material-symbols-outlined">picture_in_picture_alt</span>
-              </button>
-
               <!-- Fullscreen -->
               <button class="ctrl-btn" id="ctrlFullscreenBtn" title="Toàn màn hình (F)">
                 <span class="material-symbols-outlined icon-fs-enter">fullscreen</span>
@@ -219,7 +217,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
-  <script src="js/watch.js?v=57"></script>
+  <script src="js/watch.js?v=88"></script>
 </body>
 
 </html>

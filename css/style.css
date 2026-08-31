@@ -1046,6 +1046,8 @@ img {
   background: #000;
   outline: none;
   user-select: none;
+  container-type: inline-size;
+  container-name: player;
 }
 
 /* Fullscreen handling */
@@ -1082,17 +1084,116 @@ img {
   background: #000;
 }
 
-/* Video Subtitles (VTT ::cue) styling */
-video::cue {
-  background-color: rgba(0, 0, 0, 0.8) !important;
+/* ===== CUSTOM SUBTITLES OVERLAY (Linh hoạt tự co giãn theo kích thước video player) ===== */
+.custom-subtitle-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 12;
+  text-align: center;
+  padding: 0 24px;
+  transition: bottom 0.25s ease;
+}
+
+.player-wrapper.hide-controls .custom-subtitle-overlay {
+  bottom: 46px;
+}
+
+.custom-subtitle-text {
+  display: inline-block;
   color: #ffffff !important;
-  font-family: var(--font-family) !important;
-  font-size: 1.15rem !important;
-  font-weight: 600 !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
-  line-height: 1.4 !important;
-  padding: 3px 8px !important;
-  border-radius: 4px !important;
+  font-family: inherit;
+  font-size: clamp(0.95rem, 3.1cqw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  text-shadow: 
+    -2px -2px 0 #000000,  
+     2px -2px 0 #000000,
+    -2px  2px 0 #000000,
+     2px  2px 0 #000000,
+    -1px -1px 0 #000000,
+     1px -1px 0 #000000,
+    -1px  1px 0 #000000,
+     1px  1px 0 #000000,
+     0px -2px 0 #000000,
+     0px  2px 0 #000000,
+    -2px  0px 0 #000000,
+     2px  0px 0 #000000,
+     0 3px 6px rgba(0, 0, 0, 0.95);
+  background: transparent !important;
+  background-color: transparent !important;
+  user-select: none;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+/* Tinh chỉnh vị trí cho màn hình nhỏ (Mobile) */
+@container player (max-width: 600px) {
+  .custom-subtitle-overlay {
+    bottom: 58px;
+    padding: 0 12px;
+  }
+  .player-wrapper.hide-controls .custom-subtitle-overlay {
+    bottom: 26px;
+  }
+  .custom-subtitle-text {
+    font-size: clamp(0.9rem, 3.8cqw, 1.15rem);
+    text-shadow: 
+      -1.5px -1.5px 0 #000000,  
+       1.5px -1.5px 0 #000000,
+      -1.5px  1.5px 0 #000000,
+       1.5px  1.5px 0 #000000,
+       0 2px 4px rgba(0, 0, 0, 0.95);
+  }
+}
+
+/* Tinh chỉnh cho Fullscreen hoặc màn hình lớn */
+@container player (min-width: 1200px) {
+  .custom-subtitle-overlay {
+    bottom: 90px;
+    padding: 0 36px;
+  }
+  .player-wrapper.hide-controls .custom-subtitle-overlay {
+    bottom: 54px;
+  }
+  .custom-subtitle-text {
+    font-size: clamp(1.45rem, 3.2cqw, 2.5rem);
+  }
+}
+
+/* Fallback Video Subtitles (VTT ::cue) */
+video::cue,
+::cue {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: transparent !important;
+  font-size: 0px !important;
+  display: none !important;
+}
+
+video::-webkit-media-text-track-display {
+  background: transparent !important;
+  background-color: transparent !important;
+  display: none !important;
+}
+
+video::-webkit-media-text-track-container {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+video::-webkit-media-text-track-background {
+  display: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Loading */

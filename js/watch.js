@@ -341,25 +341,8 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0, subt
   videoEl = video;
   wrapper.classList.remove('is-iframe');
 
-  // Configure subtitles tracks
-  while (video.querySelector('track')) {
-    video.querySelector('track').remove();
-  }
-  if (subtitles) {
-    const subList = Array.isArray(subtitles) ? subtitles : (typeof subtitles === 'string' ? [{ url: subtitles, label: 'Tiếng Việt', lang: 'vi', default: true }] : [subtitles]);
-    subList.forEach((sub, idx) => {
-      if (!sub || !sub.url) return;
-      const track = document.createElement('track');
-      track.kind = sub.kind || 'subtitles';
-      track.label = sub.label || (sub.code === 'eng' ? 'English' : 'Tiếng Việt');
-      track.srclang = sub.lang || sub.code || 'vi';
-      track.src = sub.url;
-      if (sub.default !== undefined ? sub.default : idx === 0) {
-        track.default = true;
-      }
-      video.appendChild(track);
-    });
-  }
+  // Configure subtitles tracks & menu
+  setupSubtitles(subtitles);
 
   const loading = document.getElementById('playerLoading');
   if (loading) loading.classList.remove('hidden');
@@ -696,6 +679,9 @@ function initPlayerEvents() {
   // Speed selector
   initSpeedEvents();
 
+  // Subtitles selector
+  initSubtitleEvents();
+
   // PiP & Fullscreen
   initPipAndFullscreenEvents();
 
@@ -953,6 +939,136 @@ function initSpeedEvents() {
   });
 }
 
+let currentSubtitleIndex = 0;
+
+function updateCustomSubtitleDisplay() {
+  const overlay = document.getElementById('customSubtitleOverlay');
+  if (!overlay || !videoEl) return;
+
+  if (currentSubtitleIndex < 0 || !videoEl.textTracks || videoEl.textTracks.length === 0) {
+    overlay.innerHTML = '';
+    return;
+  }
+
+  const track = videoEl.textTracks[currentSubtitleIndex];
+  if (!track || !track.activeCues || track.activeCues.length === 0) {
+    overlay.innerHTML = '';
+    return;
+  }
+
+  const lines = [];
+  for (let i = 0; i < track.activeCues.length; i++) {
+    const cue = track.activeCues[i];
+    if (cue && cue.text) {
+      lines.push(cue.text.replace(/\n/g, '<br/>'));
+    }
+  }
+
+  if (lines.length > 0) {
+    overlay.innerHTML = `<div class="custom-subtitle-text">${lines.join('<br/>')}</div>`;
+  } else {
+    overlay.innerHTML = '';
+  }
+}
+
+function setupSubtitles(subtitles) {
+  const overlay = document.getElementById('customSubtitleOverlay');
+  if (overlay) overlay.innerHTML = '';
+  if (!videoEl) return;
+
+  // Clear existing tracks
+  while (videoEl.querySelector('track')) {
+    videoEl.querySelector('track').remove();
+  }
+
+  if (!subtitles || (Array.isArray(subtitles) && subtitles.length === 0)) {
+    currentSubtitleIndex = -1;
+    return;
+  }
+
+  const subList = Array.isArray(subtitles)
+    ? subtitles
+    : (typeof subtitles === 'string' ? [{ url: subtitles, label: 'Tiếng Việt', lang: 'vi', default: true }] : [subtitles]);
+
+  const validSubs = subList.filter(s => s && s.url);
+  if (validSubs.length === 0) {
+    currentSubtitleIndex = -1;
+    return;
+  }
+
+  // Add tracks to video element
+  validSubs.forEach((sub, idx) => {
+    const track = document.createElement('track');
+    track.kind = sub.kind || 'subtitles';
+    track.label = sub.label || (sub.code === 'eng' ? 'English' : 'Tiếng Việt');
+    track.srclang = sub.lang || sub.code || 'vi';
+    track.src = sub.url;
+    if (sub.default !== undefined ? sub.default : idx === 0) {
+      track.default = true;
+    }
+
+    const attachCueListener = () => {
+      if (track.track) {
+        // 'hidden' allows cuechange and activeCues in JS without showing browser's black box
+        track.track.mode = (idx === 0) ? 'hidden' : 'disabled';
+        track.track.removeEventListener('cuechange', updateCustomSubtitleDisplay);
+        track.track.addEventListener('cuechange', updateCustomSubtitleDisplay);
+      }
+    };
+
+    track.addEventListener('load', attachCueListener);
+    videoEl.appendChild(track);
+  });
+
+  currentSubtitleIndex = 0;
+
+  // Ensure tracks are in hidden mode to feed activeCues to custom overlay
+  const ensureTracksReady = () => {
+    if (videoEl && videoEl.textTracks && videoEl.textTracks.length > 0) {
+      for (let i = 0; i < videoEl.textTracks.length; i++) {
+        const t = videoEl.textTracks[i];
+        t.mode = (i === 0) ? 'hidden' : 'disabled';
+        t.removeEventListener('cuechange', updateCustomSubtitleDisplay);
+        t.addEventListener('cuechange', updateCustomSubtitleDisplay);
+      }
+      updateCustomSubtitleDisplay();
+    }
+  };
+
+  setTimeout(ensureTracksReady, 100);
+  setTimeout(ensureTracksReady, 500);
+  setTimeout(ensureTracksReady, 1200);
+
+  videoEl.removeEventListener('timeupdate', updateCustomSubtitleDisplay);
+  videoEl.addEventListener('timeupdate', updateCustomSubtitleDisplay);
+  videoEl.removeEventListener('seeking', updateCustomSubtitleDisplay);
+  videoEl.addEventListener('seeking', updateCustomSubtitleDisplay);
+}
+
+function selectSubtitleTrack(index) {
+  if (!videoEl || !videoEl.textTracks) return;
+  const tracks = videoEl.textTracks;
+  currentSubtitleIndex = index;
+
+  for (let i = 0; i < tracks.length; i++) {
+    tracks[i].mode = (i === index) ? 'hidden' : 'disabled';
+  }
+  updateCustomSubtitleDisplay();
+}
+
+function toggleSubtitles() {
+  if (!videoEl || !videoEl.textTracks || videoEl.textTracks.length === 0) return;
+  if (currentSubtitleIndex >= 0) {
+    selectSubtitleTrack(-1);
+  } else {
+    selectSubtitleTrack(0);
+  }
+}
+
+function initSubtitleEvents() {
+  // Subtitles auto-display by default
+}
+
 function initPipAndFullscreenEvents() {
   const pipBtn = document.getElementById('ctrlPipBtn');
   const fsBtn = document.getElementById('ctrlFullscreenBtn');
@@ -1103,12 +1219,15 @@ function initKeyboardEvents() {
         const slider = document.getElementById('volumeSlider');
         if (slider) slider.value = videoEl.volume;
       }
-    } else if (e.key === 'f') {
+    } else if (e.key === 'f' || e.key === 'F') {
       e.preventDefault();
       toggleFullscreen();
-    } else if (e.key === 'm') {
+    } else if (e.key === 'm' || e.key === 'M') {
       e.preventDefault();
       if (videoEl) videoEl.muted = !videoEl.muted;
+    } else if (e.key === 'c' || e.key === 'C') {
+      e.preventDefault();
+      toggleSubtitles();
     }
   });
 }
@@ -1120,8 +1239,10 @@ function showControls() {
 
 function hideControls() {
   const wrapper = document.getElementById('playerWrapper');
-  const dropdown = document.getElementById('speedDropdown');
-  if (dropdown && dropdown.classList.contains('show')) return;
+  const speedDropdown = document.getElementById('speedDropdown');
+  const subDropdown = document.getElementById('subtitleDropdown');
+  if (speedDropdown && speedDropdown.classList.contains('show')) return;
+  if (subDropdown && subDropdown.classList.contains('show')) return;
   if (wrapper && videoEl && !videoEl.paused) {
     wrapper.classList.add('hide-controls');
   }
