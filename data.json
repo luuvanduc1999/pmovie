@@ -20,6 +20,21 @@
         "button": "2",
         "title": "Tập 2",
         "r2": "https://cdn.dmovie.online/DevilsPlan2/hls/ep2/index.m3u8?v=1"
+      },
+      {
+        "button": "3",
+        "title": "Tập 3",
+        "r2": "https://cdn.dmovie.online/DevilsPlan2/hls/ep3/index.m3u8?v=1"
+      },
+      {
+        "button": "4",
+        "title": "Tập 4",
+        "r2": "https://cdn.dmovie.online/DevilsPlan2/hls/ep4/index.m3u8?v=1"
+      },
+      {
+        "button": "5",
+        "title": "Tập 5",
+        "r2": "https://cdn.dmovie.online/DevilsPlan2/hls/ep5/index.m3u8?v=1"
       }
     ]
   },
