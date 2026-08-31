@@ -1063,6 +1063,15 @@ img {
   aspect-ratio: auto !important;
 }
 
+/* Iframe embed mode: hide custom overlays to allow full interaction with embedded player */
+.player-wrapper.is-iframe .player-center-controls,
+.player-wrapper.is-iframe .player-bottom-controls,
+.player-wrapper.is-iframe .player-resume-toast,
+.player-wrapper.is-iframe .seek-ripple {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 #videoPlayer {
   position: absolute;
   inset: 0;
@@ -1071,6 +1080,19 @@ img {
   border: none;
   object-fit: contain;
   background: #000;
+}
+
+/* Video Subtitles (VTT ::cue) styling */
+video::cue {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  color: #ffffff !important;
+  font-family: var(--font-family) !important;
+  font-size: 1.15rem !important;
+  font-weight: 600 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
+  line-height: 1.4 !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
 }
 
 /* Loading */

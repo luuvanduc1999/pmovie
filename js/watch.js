@@ -34,6 +34,8 @@ function getSavedProgress(m, epIndex = null) {
 
 function saveWatchProgress(time, duration) {
   if (!movie || !videoEl || isNaN(time) || isNaN(duration) || duration <= 0) return;
+  const currentEp = movie.episodes ? movie.episodes[currentEpIndex] : null;
+  if (currentEp && currentEp.embed) return;
   try {
     const history = getWatchHistory();
     const key = getMovieKey(movie);
@@ -219,7 +221,22 @@ function loadEpisode(index, shouldScroll = false, autoPlay = false) {
 
   currentEpIndex = index;
   const ep = movie.episodes[index];
-  const url = ep.r2 || ep.url || '';
+
+  // Parse vmos if present
+  let vmosM3u8Url = '';
+  let vmosEmbedUrl = '';
+  if (ep.vmos) {
+    const vmosIdMatch = String(ep.vmos).match(/[a-f0-9-]{36}/i);
+    const vmosId = vmosIdMatch ? vmosIdMatch[0] : ep.vmos.trim();
+    if (vmosId) {
+      vmosM3u8Url = `https://v3.streamvsmov.com/stream/${vmosId}/master.m3u8`;
+      vmosEmbedUrl = `https://v3.streamvsmov.com/video/${vmosId}`;
+    }
+  }
+
+  const url = ep.m3u8 || ep.r2 || vmosM3u8Url || ep.url || '';
+  const fallbackEmbed = ep.embed || vmosEmbedUrl;
+  const subtitles = ep.sub || ep.subtitles || ep.subtitle;
 
   // Update URL without reload
   const pageUrl = new URL(window.location);
@@ -237,15 +254,32 @@ function loadEpisode(index, shouldScroll = false, autoPlay = false) {
     resumeTime = savedEp.time;
   }
 
-  if (ep.driveId && !url) {
+  if (ep.embed && !ep.m3u8 && !ep.r2 && !ep.vmos) {
+    // Không lưu thời gian đang xem khi dùng embed thuần và xóa tiến trình cũ nếu có
+    try {
+      const history = getWatchHistory();
+      const key = getMovieKey(movie);
+      if (history[key]) {
+        history[key].lastEpIndex = index;
+        if (history[key].episodes && history[key].episodes[index]) {
+          delete history[key].episodes[index];
+        }
+        history[key].updatedAt = Date.now();
+        localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+      }
+    } catch (_) {}
+
+    hideResumeToast();
+    setIframePlayer(ep.embed);
+  } else if (ep.driveId && !url) {
     // Ưu tiên trình phát video gốc ở mọi kích thước màn hình
     const streamUrl = `https://drive.usercontent.google.com/download?id=${ep.driveId}&export=download&confirm=t`;
     const fallbackUrl = `https://drive.google.com/file/d/${ep.driveId}/preview`;
-    setVideoPlayer(streamUrl, fallbackUrl, shouldAutoPlay, resumeTime);
+    setVideoPlayer(streamUrl, fallbackUrl, shouldAutoPlay, resumeTime, subtitles);
   } else if (url.includes('drive.google.com') || url.includes('youtube.com/embed')) {
     setIframePlayer(url);
   } else {
-    setVideoPlayer(url, null, shouldAutoPlay, resumeTime);
+    setVideoPlayer(url, fallbackEmbed, shouldAutoPlay, resumeTime, subtitles);
   }
 
   // Update now playing
@@ -280,7 +314,7 @@ let controlsTimeout = null;
 let isDraggingTimeline = false;
 let playerInitialized = false;
 
-function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0) {
+function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0, subtitles = null) {
   const wrapper = document.getElementById('playerWrapper');
   let video = document.getElementById('videoPlayer');
 
@@ -306,6 +340,26 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0) {
 
   videoEl = video;
   wrapper.classList.remove('is-iframe');
+
+  // Configure subtitles tracks
+  while (video.querySelector('track')) {
+    video.querySelector('track').remove();
+  }
+  if (subtitles) {
+    const subList = Array.isArray(subtitles) ? subtitles : (typeof subtitles === 'string' ? [{ url: subtitles, label: 'Tiếng Việt', lang: 'vi', default: true }] : [subtitles]);
+    subList.forEach((sub, idx) => {
+      if (!sub || !sub.url) return;
+      const track = document.createElement('track');
+      track.kind = sub.kind || 'subtitles';
+      track.label = sub.label || (sub.code === 'eng' ? 'English' : 'Tiếng Việt');
+      track.srclang = sub.lang || sub.code || 'vi';
+      track.src = sub.url;
+      if (sub.default !== undefined ? sub.default : idx === 0) {
+        track.default = true;
+      }
+      video.appendChild(track);
+    });
+  }
 
   const loading = document.getElementById('playerLoading');
   if (loading) loading.classList.remove('hidden');
@@ -388,6 +442,13 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0) {
         if (loading) loading.classList.add('hidden');
         if (fallbackUrl) {
           setIframePlayer(fallbackUrl);
+        } else if (movie && movie.episodes && movie.episodes[currentEpIndex]) {
+          const currentEp = movie.episodes[currentEpIndex];
+          const embedLink = currentEp.embed || currentEp._embed;
+          if (embedLink) {
+            console.log('Falling back to embed player:', embedLink);
+            setIframePlayer(embedLink);
+          }
         }
       }
     });
@@ -449,6 +510,12 @@ function setVideoPlayer(url, fallbackUrl, autoPlay = false, resumeTime = 0) {
     if (loading) loading.classList.add('hidden');
     if (fallbackUrl) {
       setIframePlayer(fallbackUrl);
+    } else if (movie && movie.episodes && movie.episodes[currentEpIndex]) {
+      const currentEp = movie.episodes[currentEpIndex];
+      const embedLink = currentEp.embed || currentEp._embed;
+      if (embedLink) {
+        setIframePlayer(embedLink);
+      }
     }
   };
 }
@@ -459,16 +526,17 @@ function setIframePlayer(url) {
     hlsInstance = null;
   }
 
+  videoEl = null;
   const wrapper = document.getElementById('playerWrapper');
   let player = document.getElementById('videoPlayer');
 
   if (!player || player.tagName !== 'IFRAME') {
     const iframe = document.createElement('iframe');
     iframe.id = 'videoPlayer';
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.setAttribute('webkitallowfullscreen', '');
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.setAttribute('webkitallowfullscreen', 'true');
+    iframe.setAttribute('mozallowfullscreen', 'true');
     iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-presentation');
     if (player) wrapper.replaceChild(iframe, player);
     else wrapper.prepend(iframe);
     player = iframe;
