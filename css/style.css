@@ -1087,7 +1087,7 @@ img {
 /* ===== CUSTOM SUBTITLES OVERLAY (Linh hoạt tự co giãn theo kích thước video player) ===== */
 .custom-subtitle-overlay {
   position: absolute;
-  bottom: 80px;
+  bottom: 96px;
   left: 0;
   right: 0;
   display: flex;
@@ -1103,7 +1103,7 @@ img {
 }
 
 .player-wrapper.hide-controls .custom-subtitle-overlay {
-  bottom: 46px;
+  bottom: 64px;
 }
 
 .custom-subtitle-text {
@@ -1138,11 +1138,11 @@ img {
 /* Tinh chỉnh vị trí cho màn hình nhỏ (Mobile) */
 @container player (max-width: 600px) {
   .custom-subtitle-overlay {
-    bottom: 58px;
+    bottom: 72px;
     padding: 0 12px;
   }
   .player-wrapper.hide-controls .custom-subtitle-overlay {
-    bottom: 26px;
+    bottom: 40px;
   }
   .custom-subtitle-text {
     font-size: clamp(0.9rem, 3.8cqw, 1.15rem);
@@ -1158,11 +1158,11 @@ img {
 /* Tinh chỉnh cho Fullscreen hoặc màn hình lớn */
 @container player (min-width: 1200px) {
   .custom-subtitle-overlay {
-    bottom: 90px;
+    bottom: 110px;
     padding: 0 36px;
   }
   .player-wrapper.hide-controls .custom-subtitle-overlay {
-    bottom: 54px;
+    bottom: 74px;
   }
   .custom-subtitle-text {
     font-size: clamp(1.45rem, 3.2cqw, 2.5rem);
