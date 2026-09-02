@@ -85,6 +85,31 @@
         "button": "15",
         "title": "Tập 15",
         "r2": "https://cdn.dmovie.online/DongYi/hls/ep15/index.m3u8?v=1"
+      },
+      {
+        "button": "16",
+        "title": "Tập 16",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep16/index.m3u8?v=1"
+      },
+      {
+        "button": "17",
+        "title": "Tập 17",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep17/index.m3u8?v=1"
+      },
+      {
+        "button": "18",
+        "title": "Tập 18",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep18/index.m3u8?v=1"
+      },
+      {
+        "button": "19",
+        "title": "Tập 19",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep19/index.m3u8?v=1"
+      },
+      {
+        "button": "20",
+        "title": "Tập 20",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep20/index.m3u8?v=1"
       }
     ]
   },
