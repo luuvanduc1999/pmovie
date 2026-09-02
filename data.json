@@ -1,5 +1,44 @@
 [
   {
+    "id": 6,
+    "slug": "dong-yi",
+    "title": "Dong Yi - Hoàng cung dậy sóng",
+    "poster": "static/poster/dongyi.webp",
+    "backdrop": "static/backdrop/dongyi.webp",
+    "type": "Phim bộ",
+    "year": 2010,
+    "genre": "Cổ trang, Lịch sử, Cung đấu, Tình cảm",
+    "rating": 8.5,
+    "description": "Dong Yi (Đồng Y) kể về cuộc đời đầy sóng gió và nghị lực phi thường của Choi Dong-yi (Han Hyo-joo thủ vai), một thiếu nữ xuất thân từ tầng lớp tiện dân bước chân vào hoàng cung. Bằng sự thông minh, lòng nhân hậu và tài năng phá án xuất chúng, Dong-yi từng bước vượt qua mọi âm mưu hiểm độc chốn hậu cung, chiếm trọn trái tim của vua Triều Tiên Túc Tông (Ji Jin-hee) và trở thành Thục tần Choi (Suk-bin Choe) - người sinh hạ vị vua Triều Tiên Anh Tổ (Yeongjo) kiệt xuất trong lịch sử.",
+    "episodes": [
+      {
+        "button": "1",
+        "title": "Tập 1",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep1/index.m3u8?v=1"
+      },
+      {
+        "button": "2",
+        "title": "Tập 2",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep2/index.m3u8?v=1"
+      },
+      {
+        "button": "3",
+        "title": "Tập 3",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep3/index.m3u8?v=1"
+      },
+      {
+        "button": "4",
+        "title": "Tập 4",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep4/index.m3u8?v=1"
+      },
+      {
+        "button": "5",
+        "title": "Tập 5",
+        "r2": "https://cdn.dmovie.online/DongYi/hls/ep5/index.m3u8?v=1"
+      }
+    ]
+  },
+  {
     "id": 5,
     "slug": "devils-plan-2",
     "title": "The Devil's Plan: Season 2",
